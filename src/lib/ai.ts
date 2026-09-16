@@ -37,6 +37,7 @@ export type FeedbackInput = {
   faseNummer: number;
   faseOmschrijving: string | null;
   criteria: string[];
+  velden: { label: string; waarde: string }[];
   uitwerking: string;
   materiaal: string[];
   bronnen: string[];
@@ -57,6 +58,10 @@ Antwoord UITSLUITEND met één geldig JSON-object, zonder omliggende tekst of co
   const bronnenTekst = input.bronnen.length ? input.bronnen.map((b) => `- ${b}`).join("\n") : "(geen bronnen toegevoegd)";
   const materiaalTekst = input.materiaal.length ? input.materiaal.map((m) => `- ${m}`).join("\n") : "(geen bijlagen of links toegevoegd)";
   const criteriaTekst = input.criteria.length ? input.criteria.map((c) => `- ${c}`).join("\n") : "(geen criteria)";
+  const ingevuld = input.velden.filter((v) => v.waarde.trim());
+  const veldenTekst = ingevuld.length
+    ? ingevuld.map((v) => `### ${v.label}\n${v.waarde.trim()}`).join("\n\n")
+    : "(geen velden ingevuld)";
 
   const user = `Fase ${input.faseNummer}: ${input.faseTitel}
 
@@ -66,8 +71,11 @@ ${input.faseOmschrijving ?? "(geen omschrijving)"}
 Beoordelingscriteria voor deze fase:
 ${criteriaTekst}
 
---- Uitwerking van de leerling ---
-${input.uitwerking.trim() || "(nog niets ingevuld)"}
+--- Ingevulde velden van de leerling ---
+${veldenTekst}
+
+--- Extra aantekeningen ---
+${input.uitwerking.trim() || "(geen)"}
 
 Toegevoegd materiaal / bijlagen:
 ${materiaalTekst}

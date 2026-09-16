@@ -5,6 +5,8 @@ import { getSession } from "@/lib/session";
 import { fmtRange, fmtDate, humanUntil, isPast } from "@/lib/dates";
 import StatusSelect from "@/components/phase/StatusSelect";
 import Notes from "@/components/phase/Notes";
+import FaseVelden from "@/components/phase/FaseVelden";
+import { veldenVoorFase } from "@/lib/faseVelden";
 import Checklist from "@/components/phase/Checklist";
 import Attachments from "@/components/phase/Attachments";
 import CriteriaChecklist from "@/components/phase/CriteriaChecklist";
@@ -40,6 +42,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
   const { data: phase } = await supabase.from("pws_phases").select("*").eq("id", id).single();
   if (!phase) notFound();
   const p = phase as Phase;
+  const velden = veldenVoorFase(p.order_index);
 
   const [
     { data: checklist },
@@ -99,7 +102,16 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
         </p>
       )}
 
-      <Section title="Jouw uitwerking" hint="Vul hier het echte werk voor deze fase in.">
+      {velden.length > 0 && (
+        <Section title="Jouw uitwerking" hint="Vul hier het echte werk voor deze fase in.">
+          <FaseVelden phaseId={p.id} velden={velden} initial={p.veld_data ?? {}} />
+        </Section>
+      )}
+
+      <Section
+        title={velden.length > 0 ? "Extra aantekeningen" : "Jouw uitwerking"}
+        hint={velden.length > 0 ? "Losse gedachten of aanvullingen." : "Vul hier het echte werk voor deze fase in."}
+      >
         <Notes phaseId={p.id} initial={p.notes ?? ""} />
       </Section>
 

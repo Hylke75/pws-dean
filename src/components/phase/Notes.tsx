@@ -22,8 +22,8 @@ export default function Notes({ phaseId, initial }: { phaseId: string; initial: 
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={save}
-        rows={12}
-        placeholder="Werk hier je onderdeel voor deze fase uit — je onderzoek, tekst, resultaten of aantekeningen. Grotere bestanden voeg je hieronder als bijlage toe."
+        rows={8}
+        placeholder="Ruimte voor uitwerking, losse gedachten of aanvullingen. Grotere bestanden voeg je als bijlage toe."
         className="w-full resize-y rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
       />
       <div className="mt-1 h-4 text-xs text-slate-400">

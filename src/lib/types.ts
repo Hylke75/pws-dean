@@ -19,6 +19,7 @@ export type Phase = {
   status: PhaseStatus;
   is_milestone: boolean;
   notes: string | null;
+  veld_data: Record<string, string> | null;
   review_status: ReviewStatus;
   submitted_at: string | null;
   created_at: string;

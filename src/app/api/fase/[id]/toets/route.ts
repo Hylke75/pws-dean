@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { aiBeschikbaar, getPhaseFeedback } from "@/lib/ai";
+import { veldenVoorFase } from "@/lib/faseVelden";
 import type { Phase, ToetsCriterium, Attachment, Source } from "@/lib/types";
 
 export const maxDuration = 60;
@@ -30,11 +31,15 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   ]);
 
   try {
+    const veldConfig = veldenVoorFase(p.order_index);
+    const vd = (p.veld_data ?? {}) as Record<string, string>;
+
     const data = await getPhaseFeedback({
       faseTitel: p.title,
       faseNummer: p.order_index,
       faseOmschrijving: p.description,
       criteria: ((criteria as ToetsCriterium[]) ?? []).map((c) => c.text),
+      velden: veldConfig.map((v) => ({ label: v.label, waarde: vd[v.key] ?? "" })),
       uitwerking: p.notes ?? "",
       materiaal: ((attachments as Attachment[]) ?? []).map((a) => a.label),
       bronnen: ((sources as Source[]) ?? []).map((s) => s.title),
