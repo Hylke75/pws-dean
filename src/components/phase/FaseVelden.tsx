@@ -52,6 +52,11 @@ export default function FaseVelden({
               className="mt-1 w-full resize-y rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           )}
+          {v.voorbeeld && (
+            <p className="mt-1 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-500">
+              <span className="font-medium text-slate-600">Voorbeeld:</span> {v.voorbeeld}
+            </p>
+          )}
         </div>
       ))}
       <div className="h-4 text-xs text-slate-400">

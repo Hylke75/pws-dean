@@ -54,7 +54,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
     return NextResponse.json({ ok: true, data });
   } catch (e) {
-    console.error("[toets] AI-fout:", e);
+    console.error("[zelfcheck] fout:", e);
     return NextResponse.json({ ok: false, reason: "ai_error" }, { status: 500 });
   }
 }

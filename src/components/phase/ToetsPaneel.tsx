@@ -22,7 +22,7 @@ export default function ToetsPaneel({
   const [at, setAt] = useState<string | null>(initialAt);
   const [state, setState] = useState<"idle" | "loading" | "no_key" | "error">("idle");
 
-  async function toets() {
+  async function controleer() {
     setState("loading");
     try {
       const res = await fetch(`/api/fase/${phaseId}/toets`, { method: "POST" });
@@ -47,35 +47,35 @@ export default function ToetsPaneel({
     <div>
       <div className="flex flex-wrap items-center gap-3">
         <button
-          onClick={toets}
+          onClick={controleer}
           disabled={state === "loading"}
-          className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-900 disabled:opacity-60"
         >
           {state === "loading" ? (
             <>
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-              Aan het toetsen…
+              Bezig met controleren…
             </>
           ) : (
-            <>✨ {data ? "Opnieuw toetsen" : "Toets mijn werk met AI"}</>
+            <>{data ? "Opnieuw controleren" : "Controleer mijn werk"}</>
           )}
         </button>
-        {at && <span className="text-xs text-slate-400">Laatst getoetst: {new Date(at).toLocaleString("nl-NL")}</span>}
+        {at && <span className="text-xs text-slate-400">Laatst gecontroleerd: {new Date(at).toLocaleString("nl-NL")}</span>}
       </div>
 
       {state === "no_key" && (
         <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
-          De AI-toets is nog niet geactiveerd (er staat nog geen sleutel ingesteld).
+          De zelfcheck is nog niet ingesteld.
         </p>
       )}
       {state === "error" && (
         <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          Er ging iets mis bij het toetsen. Probeer het zo nog eens.
+          Er ging iets mis. Probeer het zo nog eens.
         </p>
       )}
 
       {data && v && (
-        <div className="mt-4 space-y-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
+        <div className="mt-4 space-y-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${v.cls}`}>
               {v.emoji} {v.label}
@@ -112,11 +112,14 @@ export default function ToetsPaneel({
           )}
 
           <div className="rounded-lg bg-white p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Volgende stap</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Volgende stap</p>
             <p className="mt-1 text-sm text-slate-800">{data.volgende_stap}</p>
           </div>
 
-          <p className="text-[11px] text-slate-400">AI-feedback is een hulpmiddel — je begeleider blijft leidend.</p>
+          <p className="text-[11px] text-slate-400">
+            Automatische controle tegen de eisen van deze fase — je begeleider blijft leidend. Stem het gebruik van
+            hulpmiddelen altijd met je begeleider af.
+          </p>
         </div>
       )}
     </div>

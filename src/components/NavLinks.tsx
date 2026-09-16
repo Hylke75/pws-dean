@@ -7,6 +7,8 @@ const LINKS = [
   { href: "/", label: "Overzicht" },
   { href: "/logboek", label: "Logboek" },
   { href: "/bronnen", label: "Bronnen" },
+  { href: "/enquetes", label: "Enquête" },
+  { href: "/verslag", label: "Verslag" },
 ];
 
 export default function NavLinks({ isBegeleider }: { isBegeleider: boolean }) {

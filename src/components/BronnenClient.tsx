@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toApa } from "@/lib/apa";
+import BronUitwerking from "@/components/bron/BronUitwerking";
 import type { Source, Phase } from "@/lib/types";
 
 const TYPES: Source["source_type"][] = ["website", "boek", "artikel", "video", "interview", "overig"];
@@ -17,6 +18,7 @@ const TYPE_LABELS: Record<Source["source_type"], string> = {
 
 export default function BronnenClient({ initial, phases }: { initial: Source[]; phases: Phase[] }) {
   const [items, setItems] = useState<Source[]>(initial);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [form, setForm] = useState({
     source_type: "website" as Source["source_type"],
@@ -112,6 +114,13 @@ export default function BronnenClient({ initial, phases }: { initial: Source[]; 
                     </svg>
                   </button>
                 </div>
+                <button
+                  onClick={() => setExpanded((e) => (e === s.id ? null : s.id))}
+                  className="mt-2 text-xs font-medium text-emerald-600 hover:underline"
+                >
+                  {expanded === s.id ? "Uitwerking verbergen ▲" : "Bron uitwerken ▼"}
+                </button>
+                {expanded === s.id && <BronUitwerking source={s} />}
               </li>
             ))}
           </ul>

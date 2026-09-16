@@ -97,8 +97,42 @@ export type Source = {
   url: string | null;
   accessed_on: string | null;
   notes: string | null;
+  summary: string | null;
+  quotes: string | null;
+  reliability: Record<string, boolean> | null;
+  relevance: string | null;
   phase_id: string | null;
   created_at: string;
+};
+
+export type SurveyStatus = "concept" | "open" | "gesloten";
+export type QuestionType = "open" | "meerkeuze" | "schaal" | "janee";
+
+export type Survey = {
+  id: string;
+  title: string;
+  intro: string | null;
+  status: SurveyStatus;
+  share_token: string;
+  phase_id: string | null;
+  created_at: string;
+};
+
+export type SurveyQuestion = {
+  id: string;
+  survey_id: string;
+  text: string;
+  type: QuestionType;
+  options: string[];
+  required: boolean;
+  order_index: number;
+};
+
+export type VerslagSectie = {
+  section_key: string;
+  status: "te_doen" | "bezig" | "klaar";
+  notes: string | null;
+  updated_at: string;
 };
 
 export type Attachment = {

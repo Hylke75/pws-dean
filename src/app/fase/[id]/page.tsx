@@ -6,7 +6,8 @@ import { fmtRange, fmtDate, humanUntil, isPast } from "@/lib/dates";
 import StatusSelect from "@/components/phase/StatusSelect";
 import Notes from "@/components/phase/Notes";
 import FaseVelden from "@/components/phase/FaseVelden";
-import { veldenVoorFase } from "@/lib/faseVelden";
+import FaseHulp from "@/components/phase/FaseHulp";
+import { veldenVoorFase, hulpVoorFase } from "@/lib/faseVelden";
 import Checklist from "@/components/phase/Checklist";
 import Attachments from "@/components/phase/Attachments";
 import CriteriaChecklist from "@/components/phase/CriteriaChecklist";
@@ -43,6 +44,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
   if (!phase) notFound();
   const p = phase as Phase;
   const velden = veldenVoorFase(p.order_index);
+  const hulp = hulpVoorFase(p.order_index);
 
   const [
     { data: checklist },
@@ -102,6 +104,12 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
         </p>
       )}
 
+      {hulp && (
+        <div className="mt-4">
+          <FaseHulp hulp={hulp} />
+        </div>
+      )}
+
       {velden.length > 0 && (
         <Section title="Jouw uitwerking" hint="Vul hier het echte werk voor deze fase in.">
           <FaseVelden phaseId={p.id} velden={velden} initial={p.veld_data ?? {}} />
@@ -119,7 +127,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
         <Attachments phaseId={p.id} initial={(attachments as Attachment[]) ?? []} />
       </Section>
 
-      <Section title="Toets met AI" hint="Laat je uitwerking direct nakijken aan de eisen van deze fase.">
+      <Section title="Zelfcheck" hint="Controleer je uitwerking direct aan de eisen van deze fase.">
         <ToetsPaneel
           phaseId={p.id}
           initial={laatsteFeedback?.data ?? null}
