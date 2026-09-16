@@ -10,9 +10,21 @@ function todayIso() {
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
 }
 
+function timeToMin(t: string): number | null {
+  const m = /^(\d{1,2}):(\d{2})/.exec(t);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
+function fmtTime(t: string | null): string {
+  return t ? t.slice(0, 5) : "";
+}
+
 export default function LogboekClient({ initial, phases }: { initial: LogEntry[]; phases: Phase[] }) {
   const [items, setItems] = useState<LogEntry[]>(initial);
   const [date, setDate] = useState(todayIso());
+  const [begin, setBegin] = useState("");
+  const [eind, setEind] = useState("");
   const [activity, setActivity] = useState("");
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
@@ -25,9 +37,15 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
   const totalHours = totalMinutes / 60;
   const phaseName = (id: string | null) => phases.find((p) => p.id === id)?.title;
 
+  // Duur uit start/eind, anders handmatig
+  const bMin = timeToMin(begin);
+  const eMin = timeToMin(eind);
+  const uitTijd = bMin != null && eMin != null && eMin > bMin ? eMin - bMin : null;
+
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    const mins = (parseInt(hours || "0", 10) || 0) * 60 + (parseInt(minutes || "0", 10) || 0);
+    const handmatig = (parseInt(hours || "0", 10) || 0) * 60 + (parseInt(minutes || "0", 10) || 0);
+    const mins = uitTijd ?? handmatig;
     if (!activity.trim() || mins <= 0) return;
     setSaving(true);
     const {
@@ -37,6 +55,8 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
       .from("pws_logboek")
       .insert({
         log_date: date,
+        begin_tijd: uitTijd ? begin : null,
+        eind_tijd: uitTijd ? eind : null,
         activity: activity.trim(),
         minutes: mins,
         next_step: nextStep.trim() || null,
@@ -48,6 +68,8 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
     if (data) {
       setItems((prev) => [data as LogEntry, ...prev].sort((a, b) => (a.log_date < b.log_date ? 1 : -1)));
       setActivity("");
+      setBegin("");
+      setEind("");
       setHours("");
       setMinutes("");
       setNextStep("");
@@ -89,6 +111,9 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-medium text-slate-400">{fmtDate(it.log_date)}</span>
+                      {it.begin_tijd && it.eind_tijd && (
+                        <span className="text-xs text-slate-400">{fmtTime(it.begin_tijd)}–{fmtTime(it.eind_tijd)}</span>
+                      )}
                       <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-700">
                         {Math.floor(it.minutes / 60)}u {it.minutes % 60}m
                       </span>
@@ -124,19 +149,30 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
           <label className="mb-1 block text-xs font-medium text-slate-500">Datum</label>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
         </div>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <label className="mb-1 block text-xs font-medium text-slate-500">Van</label>
+            <input type="time" value={begin} onChange={(e) => setBegin(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
+          </div>
+          <div className="flex-1">
+            <label className="mb-1 block text-xs font-medium text-slate-500">Tot</label>
+            <input type="time" value={eind} onChange={(e) => setEind(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+        {uitTijd != null ? (
+          <p className="text-xs text-emerald-600">Duur: {Math.floor(uitTijd / 60)}u {uitTijd % 60}m</p>
+        ) : (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">Of vul de duur handmatig in</label>
+            <div className="flex gap-2">
+              <input type="number" min="0" value={hours} onChange={(e) => setHours(e.target.value)} placeholder="uren" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
+              <input type="number" min="0" max="59" value={minutes} onChange={(e) => setMinutes(e.target.value)} placeholder="min" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
+            </div>
+          </div>
+        )}
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500">Wat heb je gedaan?</label>
           <textarea value={activity} onChange={(e) => setActivity(e.target.value)} rows={2} placeholder="bijv. bronnen gezocht over…" className="w-full resize-y rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
-        </div>
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="mb-1 block text-xs font-medium text-slate-500">Uren</label>
-            <input type="number" min="0" value={hours} onChange={(e) => setHours(e.target.value)} placeholder="0" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
-          </div>
-          <div className="flex-1">
-            <label className="mb-1 block text-xs font-medium text-slate-500">Minuten</label>
-            <input type="number" min="0" max="59" value={minutes} onChange={(e) => setMinutes(e.target.value)} placeholder="0" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
-          </div>
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500">Fase (optioneel)</label>

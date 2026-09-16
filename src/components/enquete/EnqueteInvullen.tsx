@@ -22,6 +22,10 @@ export default function EnqueteInvullen({ token }: { token: string }) {
   const supabase = createClient();
 
   useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(`pws_enq_${token}`)) {
+      setState("verstuurd");
+      return;
+    }
     (async () => {
       const { data } = await supabase.rpc("pws_enquete_public", { p_token: token });
       if (data) {
@@ -54,8 +58,10 @@ export default function EnqueteInvullen({ token }: { token: string }) {
       .map((q) => ({ question_id: q.id, value: values[q.id] }));
     const { data } = await supabase.rpc("pws_enquete_indienen", { p_token: token, p_answers: answers });
     setBusy(false);
-    if (data?.ok) setState("verstuurd");
-    else setErr("Versturen mislukt. De enquête is misschien gesloten.");
+    if (data?.ok) {
+      if (typeof window !== "undefined") localStorage.setItem(`pws_enq_${token}`, "1");
+      setState("verstuurd");
+    } else setErr("Versturen mislukt. De enquête is misschien gesloten.");
   }
 
   return (

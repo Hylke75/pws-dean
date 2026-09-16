@@ -18,17 +18,20 @@ export default function EnqueteBouwer({
   initialQuestions,
   responseCount,
   answers,
+  phases,
 }: {
   survey: Survey;
   initialQuestions: SurveyQuestion[];
   responseCount: number;
   answers: { question_id: string; value: string | null }[];
+  phases: { id: string; order_index: number; title: string }[];
 }) {
   const supabase = createClient();
   const [tab, setTab] = useState<Tab>("vragen");
   const [title, setTitle] = useState(survey.title);
   const [intro, setIntro] = useState(survey.intro ?? "");
   const [status, setStatus] = useState<SurveyStatus>(survey.status);
+  const [phaseId, setPhaseId] = useState(survey.phase_id ?? "");
   const [questions, setQuestions] = useState<SurveyQuestion[]>(initialQuestions);
   const [copied, setCopied] = useState(false);
 
@@ -94,6 +97,20 @@ export default function EnqueteBouwer({
         onBlur={() => saveSurvey({ title: title.trim() || "Naamloze enquête" })}
         className="w-full rounded-lg border border-transparent bg-transparent text-2xl font-bold text-slate-900 outline-none hover:border-slate-200 focus:border-emerald-500"
       />
+
+      <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+        <span>Hoort bij fase:</span>
+        <select
+          value={phaseId}
+          onChange={(e) => { setPhaseId(e.target.value); saveSurvey({ phase_id: e.target.value || null }); }}
+          className="rounded-lg border border-slate-200 px-2 py-1 text-sm outline-none focus:border-emerald-500"
+        >
+          <option value="">— geen —</option>
+          {phases.map((p) => (
+            <option key={p.id} value={p.id}>{p.order_index}. {p.title}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="mt-3 inline-flex rounded-xl border border-slate-200 bg-white p-1">
         {(["vragen", "delen", "resultaten"] as Tab[]).map((t) => (

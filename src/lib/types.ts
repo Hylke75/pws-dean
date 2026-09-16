@@ -80,6 +80,8 @@ export type ChecklistItem = {
 export type LogEntry = {
   id: string;
   log_date: string;
+  begin_tijd: string | null;
+  eind_tijd: string | null;
   activity: string;
   minutes: number;
   next_step: string | null;

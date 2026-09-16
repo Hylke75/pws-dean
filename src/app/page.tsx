@@ -31,11 +31,31 @@ export default async function Dashboard() {
   const next = upcoming[0];
 
   const firstName = profile?.full_name?.split(" ")[0] ?? "daar";
+  const isReviewer = profile?.role !== "student";
+  const teBeoordelen = phases.filter((p) => p.review_status === "ingediend");
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="text-2xl font-bold text-slate-900">Hoi {firstName} 👋</h1>
-      <p className="mt-1 text-slate-500">Zo staat je profielwerkstuk ervoor.</p>
+      <p className="mt-1 text-slate-500">
+        {isReviewer ? "Zo staat Deans profielwerkstuk ervoor." : "Zo staat je profielwerkstuk ervoor."}
+      </p>
+
+      {isReviewer && teBeoordelen.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-5">
+          <p className="text-sm font-semibold text-sky-800">Te beoordelen ({teBeoordelen.length})</p>
+          <ul className="mt-2 space-y-1.5">
+            {teBeoordelen.map((p) => (
+              <li key={p.id}>
+                <Link href={`/fase/${p.id}`} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm hover:bg-slate-50">
+                  <span className="font-medium text-slate-800">Fase {p.order_index}: {p.title}</span>
+                  <span className="text-xs text-sky-600">Bekijk &amp; geef feedback →</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Kaarten */}
       <div className="mt-6 grid gap-4 sm:grid-cols-3">

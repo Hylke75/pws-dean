@@ -54,6 +54,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
     { data: criteria },
     { data: aiFeedback },
     { data: reviews },
+    { data: surveys },
   ] = await Promise.all([
     supabase.from("pws_checklist_items").select("*").eq("phase_id", id).order("order_index"),
     supabase.from("pws_attachments").select("*").eq("phase_id", id).order("created_at"),
@@ -62,7 +63,9 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
     supabase.from("pws_toets_criteria").select("*").eq("phase_id", id).order("order_index"),
     supabase.from("pws_ai_feedback").select("*").eq("phase_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("pws_reviews").select("*").eq("phase_id", id).order("created_at", { ascending: false }),
+    supabase.from("pws_surveys").select("id, title, status").eq("phase_id", id).order("created_at"),
   ]);
+  const gekoppeldeEnquetes = (surveys as { id: string; title: string; status: string }[]) ?? [];
 
   const laatsteFeedback = aiFeedback as AiFeedback | null;
 
@@ -126,6 +129,21 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
       <Section title="Materiaal & bijlagen" hint="Plak links of upload bestanden (documenten, foto's, data).">
         <Attachments phaseId={p.id} initial={(attachments as Attachment[]) ?? []} />
       </Section>
+
+      {gekoppeldeEnquetes.length > 0 && (
+        <Section title="Enquêtes bij deze fase">
+          <ul className="space-y-1.5">
+            {gekoppeldeEnquetes.map((s) => (
+              <li key={s.id}>
+                <Link href={`/enquetes/${s.id}`} className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm hover:bg-slate-100">
+                  <span className="font-medium text-slate-800">📋 {s.title}</span>
+                  <span className="text-xs text-slate-500">{s.status}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       <Section title="Zelfcheck" hint="Controleer je uitwerking direct aan de eisen van deze fase.">
         <ToetsPaneel

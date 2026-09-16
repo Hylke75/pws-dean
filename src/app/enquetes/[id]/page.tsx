@@ -13,9 +13,10 @@ export default async function EnqueteDetail({ params }: PageProps<"/enquetes/[id
   const { data: survey } = await supabase.from("pws_surveys").select("*").eq("id", id).single();
   if (!survey) notFound();
 
-  const [{ data: questions }, { data: responses }] = await Promise.all([
+  const [{ data: questions }, { data: responses }, { data: phases }] = await Promise.all([
     supabase.from("pws_survey_questions").select("*").eq("survey_id", id).order("order_index"),
     supabase.from("pws_survey_responses").select("id").eq("survey_id", id),
+    supabase.from("pws_phases").select("id, order_index, title").order("order_index"),
   ]);
 
   const responseIds = (responses ?? []).map((r) => r.id);
@@ -39,6 +40,7 @@ export default async function EnqueteDetail({ params }: PageProps<"/enquetes/[id
           initialQuestions={(questions as SurveyQuestion[]) ?? []}
           responseCount={responseIds.length}
           answers={answers}
+          phases={(phases as { id: string; order_index: number; title: string }[]) ?? []}
         />
       </div>
     </main>
