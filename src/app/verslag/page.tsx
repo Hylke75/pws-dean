@@ -15,10 +15,16 @@ export default async function VerslagPage() {
         De onderdelen die in je definitieve verslag horen. Vink af wat klaar is en houd per hoofdstuk
         notities bij. Veel inhoud staat al in de fases — die haal je hier bij elkaar.
       </p>
-      <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-        Controleer de exacte onderdelen en citeerregels altijd nog in Bijlage 1 van de
-        schoolhandleiding — per vak en begeleider kan het iets verschillen.
-      </p>
+      <div className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+        <p className="font-semibold">Eisen Maerlant-Lyceum</p>
+        <ul className="mt-1 list-inside list-disc space-y-0.5">
+          <li>Bronvermelding in <strong>APA-stijl</strong>; bronnenlijst op alfabet.</li>
+          <li>Conceptversie is <strong>minimaal 15 pagina&apos;s</strong>.</li>
+          <li>Resultaten <strong>per deelvraag</strong>, met grafieken/tabellen die je in de tekst uitlegt.</li>
+          <li>Bijlagen bevatten o.a. je meetinstrument (de enquête).</li>
+        </ul>
+        <p className="mt-1 text-emerald-600">Per vak en begeleider kan de nadruk verschillen — stem dit af met je begeleider.</p>
+      </div>
       <div className="mt-6">
         <VerslagClient initial={(data as VerslagSectie[]) ?? []} />
       </div>
