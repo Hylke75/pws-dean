@@ -1,5 +1,6 @@
 export type Role = "student" | "begeleider";
 export type PhaseStatus = "te_doen" | "bezig" | "klaar";
+export type ReviewStatus = "concept" | "ingediend" | "goedgekeurd" | "wijzigingen_nodig";
 
 export type Profile = {
   id: string;
@@ -18,8 +19,53 @@ export type Phase = {
   status: PhaseStatus;
   is_milestone: boolean;
   notes: string | null;
+  review_status: ReviewStatus;
+  submitted_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type ToetsCriterium = {
+  id: string;
+  phase_id: string;
+  text: string;
+  order_index: number;
+  done: boolean;
+};
+
+export type AiVerdict = "klaar" | "bijna" | "nog_niet";
+
+export type AiFeedbackData = {
+  verdict: AiVerdict;
+  samenvatting: string;
+  sterke_punten: string[];
+  aandachtspunten: string[];
+  volgende_stap: string;
+};
+
+export type AiFeedback = {
+  id: string;
+  phase_id: string;
+  verdict: string | null;
+  data: AiFeedbackData | null;
+  model: string | null;
+  created_at: string;
+};
+
+export type Review = {
+  id: string;
+  phase_id: string;
+  status: "goedgekeurd" | "wijzigingen_nodig" | "opmerking";
+  feedback: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  concept: "Concept",
+  ingediend: "Ingediend",
+  goedgekeurd: "Goedgekeurd",
+  wijzigingen_nodig: "Wijzigingen nodig",
 };
 
 export type ChecklistItem = {

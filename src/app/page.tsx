@@ -99,6 +99,15 @@ export default async function Dashboard() {
                 </div>
                 {overdue && <span className="hidden text-xs font-semibold text-red-600 sm:block">te laat</span>}
                 {soon && !overdue && <span className="hidden text-xs font-semibold text-amber-600 sm:block">{humanUntil(p.deadline)}</span>}
+                {p.review_status === "ingediend" && (
+                  <span className="hidden rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700 sm:inline">ingediend</span>
+                )}
+                {p.review_status === "goedgekeurd" && (
+                  <span className="hidden rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 sm:inline">✓ akkoord</span>
+                )}
+                {p.review_status === "wijzigingen_nodig" && (
+                  <span className="hidden rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 sm:inline">wijzigen</span>
+                )}
                 <StatusPill status={p.status} />
               </Link>
             </li>
