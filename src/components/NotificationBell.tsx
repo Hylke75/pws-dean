@@ -52,6 +52,12 @@ export default function NotificationBell() {
     await supabase.from("pws_notifications").update({ read: true }).in("id", ids);
   }
 
+  async function markOne(id: string) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, read: true } : i)));
+    const supabase = createClient();
+    await supabase.from("pws_notifications").update({ read: true }).eq("id", id);
+  }
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -96,11 +102,13 @@ export default function NotificationBell() {
                   </div>
                 );
                 return n.link ? (
-                  <Link key={n.id} href={n.link} onClick={() => setOpen(false)}>
+                  <Link key={n.id} href={n.link} onClick={() => { markOne(n.id); setOpen(false); }}>
                     {inner}
                   </Link>
                 ) : (
-                  <div key={n.id}>{inner}</div>
+                  <button key={n.id} onClick={() => markOne(n.id)} className="block w-full text-left">
+                    {inner}
+                  </button>
                 );
               })
             )}

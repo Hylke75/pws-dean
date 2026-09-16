@@ -28,6 +28,16 @@ export async function sendMail({ to, subject, html }: Mail): Promise<boolean> {
   }
 }
 
+/** Escapet tekst zodat vrije invoer veilig in mail-HTML kan. */
+export function esc(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function shell(title: string, bodyHtml: string, ctaUrl?: string): string {
   return `<!doctype html><html><body style="margin:0;background:#f4f6f8;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
   <div style="max-width:560px;margin:0 auto;padding:32px 16px">

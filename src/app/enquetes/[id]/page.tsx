@@ -13,21 +13,17 @@ export default async function EnqueteDetail({ params }: PageProps<"/enquetes/[id
   const { data: survey } = await supabase.from("pws_surveys").select("*").eq("id", id).single();
   if (!survey) notFound();
 
-  const [{ data: questions }, { data: responses }, { data: phases }] = await Promise.all([
+  const [{ data: questions }, { data: statsRaw }, { data: phases }] = await Promise.all([
     supabase.from("pws_survey_questions").select("*").eq("survey_id", id).order("order_index"),
-    supabase.from("pws_survey_responses").select("id").eq("survey_id", id),
+    supabase.rpc("pws_enquete_stats", { p_survey_id: id }),
     supabase.from("pws_phases").select("id, order_index, title").order("order_index"),
   ]);
 
-  const responseIds = (responses ?? []).map((r) => r.id);
-  let answers: { question_id: string; value: string | null }[] = [];
-  if (responseIds.length) {
-    const { data: a } = await supabase
-      .from("pws_survey_answers")
-      .select("question_id, value")
-      .in("response_id", responseIds);
-    answers = a ?? [];
-  }
+  const stats = (statsRaw as {
+    total: number;
+    counts: { question_id: string; value: string; n: number }[];
+    open: { question_id: string; value: string }[];
+  }) ?? { total: 0, counts: [], open: [] };
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
@@ -38,8 +34,7 @@ export default async function EnqueteDetail({ params }: PageProps<"/enquetes/[id
         <EnqueteBouwer
           survey={survey as Survey}
           initialQuestions={(questions as SurveyQuestion[]) ?? []}
-          responseCount={responseIds.length}
-          answers={answers}
+          stats={stats}
           phases={(phases as { id: string; order_index: number; title: string }[]) ?? []}
         />
       </div>

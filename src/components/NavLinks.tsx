@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/logboek", label: "Logboek" },
   { href: "/bronnen", label: "Bronnen" },
   { href: "/enquetes", label: "Enquête" },
+  { href: "/interviews", label: "Interviews" },
   { href: "/verslag", label: "Verslag" },
 ];
 

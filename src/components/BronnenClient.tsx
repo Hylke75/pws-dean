@@ -120,7 +120,12 @@ export default function BronnenClient({ initial, phases }: { initial: Source[]; 
                 >
                   {expanded === s.id ? "Uitwerking verbergen ▲" : "Bron uitwerken ▼"}
                 </button>
-                {expanded === s.id && <BronUitwerking source={s} />}
+                {expanded === s.id && (
+                  <BronUitwerking
+                    source={s}
+                    onUpdate={(patch) => setItems((prev) => prev.map((i) => (i.id === s.id ? { ...i, ...patch } : i)))}
+                  />
+                )}
               </li>
             ))}
           </ul>

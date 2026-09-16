@@ -82,6 +82,28 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
     await supabase.from("pws_logboek").delete().eq("id", id);
   }
 
+  const [editId, setEditId] = useState<string | null>(null);
+  const [eAct, setEAct] = useState("");
+  const [eNext, setENext] = useState("");
+  const [eH, setEH] = useState("");
+  const [eM, setEM] = useState("");
+
+  function startEdit(it: LogEntry) {
+    setEditId(it.id);
+    setEAct(it.activity);
+    setENext(it.next_step ?? "");
+    setEH(String(Math.floor(it.minutes / 60)));
+    setEM(String(it.minutes % 60));
+  }
+  async function saveEdit(id: string) {
+    const mins = (parseInt(eH || "0", 10) || 0) * 60 + (parseInt(eM || "0", 10) || 0);
+    if (!eAct.trim() || mins <= 0) return;
+    const patch = { activity: eAct.trim(), next_step: eNext.trim() || null, minutes: mins };
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+    setEditId(null);
+    await supabase.from("pws_logboek").update(patch).eq("id", id);
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
       {/* Lijst */}
@@ -107,35 +129,49 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
           <ul className="space-y-2">
             {items.map((it) => (
               <li key={it.id} className="group rounded-xl border border-slate-200 bg-white p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-medium text-slate-400">{fmtDate(it.log_date)}</span>
-                      {it.begin_tijd && it.eind_tijd && (
-                        <span className="text-xs text-slate-400">{fmtTime(it.begin_tijd)}–{fmtTime(it.eind_tijd)}</span>
-                      )}
-                      <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-700">
-                        {Math.floor(it.minutes / 60)}u {it.minutes % 60}m
-                      </span>
-                      {it.phase_id && phaseName(it.phase_id) && (
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
-                          {phaseName(it.phase_id)}
-                        </span>
-                      )}
+                {editId === it.id ? (
+                  <div className="space-y-2">
+                    <textarea value={eAct} onChange={(e) => setEAct(e.target.value)} rows={2} className="w-full resize-y rounded-lg border border-slate-200 p-2 text-sm outline-none focus:border-emerald-500" />
+                    <div className="flex items-center gap-2">
+                      <input type="number" min="0" value={eH} onChange={(e) => setEH(e.target.value)} className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm" /> <span className="text-xs text-slate-400">u</span>
+                      <input type="number" min="0" max="59" value={eM} onChange={(e) => setEM(e.target.value)} className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm" /> <span className="text-xs text-slate-400">m</span>
                     </div>
-                    <p className="mt-1.5 text-sm text-slate-800">{it.activity}</p>
-                    {it.next_step && <p className="mt-1 text-xs text-slate-500">Volgende stap: {it.next_step}</p>}
+                    <input value={eNext} onChange={(e) => setENext(e.target.value)} placeholder="Volgende stap" className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm outline-none focus:border-emerald-500" />
+                    <div className="flex gap-2">
+                      <button onClick={() => saveEdit(it.id)} className="rounded-lg bg-emerald-600 px-3 py-1 text-sm font-medium text-white hover:bg-emerald-700">Opslaan</button>
+                      <button onClick={() => setEditId(null)} className="rounded-lg px-3 py-1 text-sm text-slate-500 hover:bg-slate-100">Annuleren</button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => remove(it.id)}
-                    className="opacity-0 transition group-hover:opacity-100 text-slate-300 hover:text-red-500"
-                    aria-label="Verwijderen"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                </div>
+                ) : (
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-medium text-slate-400">{fmtDate(it.log_date)}</span>
+                        {it.begin_tijd && it.eind_tijd && (
+                          <span className="text-xs text-slate-400">{fmtTime(it.begin_tijd)}–{fmtTime(it.eind_tijd)}</span>
+                        )}
+                        <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-700">
+                          {Math.floor(it.minutes / 60)}u {it.minutes % 60}m
+                        </span>
+                        {it.phase_id && phaseName(it.phase_id) && (
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
+                            {phaseName(it.phase_id)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1.5 text-sm text-slate-800">{it.activity}</p>
+                      {it.next_step && <p className="mt-1 text-xs text-slate-500">Volgende stap: {it.next_step}</p>}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
+                      <button onClick={() => startEdit(it)} className="text-slate-300 hover:text-slate-600" aria-label="Bewerken">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </button>
+                      <button onClick={() => remove(it.id)} className="text-slate-300 hover:text-red-500" aria-label="Verwijderen">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -159,6 +195,9 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
             <input type="time" value={eind} onChange={(e) => setEind(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500" />
           </div>
         </div>
+        {bMin != null && eMin != null && eMin <= bMin && (
+          <p className="text-xs text-amber-600">Eindtijd moet ná de begintijd liggen.</p>
+        )}
         {uitTijd != null ? (
           <p className="text-xs text-emerald-600">Duur: {Math.floor(uitTijd / 60)}u {uitTijd % 60}m</p>
         ) : (

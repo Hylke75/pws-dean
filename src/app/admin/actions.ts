@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { sendMail, shell } from "@/lib/email";
+import { sendMail, shell, esc } from "@/lib/email";
 import { fmtDate } from "@/lib/dates";
 
 type Recipient = { email: string | null; full_name: string | null; phase_title: string };
@@ -75,8 +75,8 @@ export async function updatePlanning(formData: FormData): Promise<PlanningResult
     .map((c) => {
       const label = FIELD_LABELS[c.field] ?? c.field;
       const isDate = c.field === "deadline" || c.field === "start_date";
-      const o = isDate ? fmtDate(c.old) : c.old || "—";
-      const n = isDate ? fmtDate(c.new) : c.new || "—";
+      const o = isDate ? fmtDate(c.old) : esc(c.old || "—");
+      const n = isDate ? fmtDate(c.new) : esc(c.new || "—");
       return `<li><strong>${label}</strong>: ${o} → <strong>${n}</strong></li>`;
     })
     .join("");
@@ -85,7 +85,7 @@ export async function updatePlanning(formData: FormData): Promise<PlanningResult
   for (const r of recipients.values()) {
     const html = shell(
       `Planning gewijzigd: ${phaseTitle}`,
-      `<p>De planning van de fase <strong>${phaseTitle}</strong> is bijgewerkt:</p><ul>${summary}</ul>`,
+      `<p>De planning van de fase <strong>${esc(phaseTitle)}</strong> is bijgewerkt:</p><ul>${summary}</ul>`,
       site ? `${site}/fase/${phaseId}` : undefined,
     );
     await sendMail({ to: r.email!, subject: `Planning gewijzigd: ${phaseTitle}`, html });

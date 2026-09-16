@@ -13,19 +13,24 @@ const TYPE_LABEL: Record<QuestionType, string> = {
 
 type Tab = "vragen" | "delen" | "resultaten";
 
+type Stats = {
+  total: number;
+  counts: { question_id: string; value: string; n: number }[];
+  open: { question_id: string; value: string }[];
+};
+
 export default function EnqueteBouwer({
   survey,
   initialQuestions,
-  responseCount,
-  answers,
+  stats,
   phases,
 }: {
   survey: Survey;
   initialQuestions: SurveyQuestion[];
-  responseCount: number;
-  answers: { question_id: string; value: string | null }[];
+  stats: Stats;
   phases: { id: string; order_index: number; title: string }[];
 }) {
+  const responseCount = stats.total;
   const supabase = createClient();
   const [tab, setTab] = useState<Tab>("vragen");
   const [title, setTitle] = useState(survey.title);
@@ -80,14 +85,35 @@ export default function EnqueteBouwer({
 
   const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/enquete/${survey.share_token}` : "";
 
-  const results = useMemo(() => {
-    const byQ: Record<string, string[]> = {};
-    for (const a of answers) {
-      if (!byQ[a.question_id]) byQ[a.question_id] = [];
-      if (a.value != null) byQ[a.question_id].push(a.value);
+  const countsByQ = useMemo(() => {
+    const m: Record<string, { value: string; n: number }[]> = {};
+    for (const c of stats.counts) (m[c.question_id] ??= []).push({ value: c.value, n: c.n });
+    return m;
+  }, [stats]);
+  const openByQ = useMemo(() => {
+    const m: Record<string, string[]> = {};
+    for (const o of stats.open) (m[o.question_id] ??= []).push(o.value);
+    return m;
+  }, [stats]);
+
+  function exportCsv() {
+    const rows: string[][] = [["Vraag", "Antwoord", "Aantal"]];
+    for (const q of questions) {
+      if (q.type === "open") {
+        for (const v of openByQ[q.id] ?? []) rows.push([q.text, v, "1"]);
+      } else {
+        for (const c of countsByQ[q.id] ?? []) rows.push([q.text, c.value, String(c.n)]);
+      }
     }
-    return byQ;
-  }, [answers]);
+    const csv = rows.map((r) => r.map((c) => `"${(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `enquete-${survey.title.replace(/[^\w]+/g, "_")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div>
@@ -255,13 +281,20 @@ export default function EnqueteBouwer({
       {/* RESULTATEN */}
       {tab === "resultaten" && (
         <div className="mt-4 space-y-3">
-          <p className="text-sm text-slate-500">{responseCount} reactie{responseCount === 1 ? "" : "s"}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-500">{responseCount} reactie{responseCount === 1 ? "" : "s"}</p>
+            {responseCount > 0 && (
+              <button onClick={exportCsv} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                Download CSV
+              </button>
+            )}
+          </div>
           {questions.length === 0 && <p className="text-sm text-slate-400">Nog geen vragen.</p>}
           {questions.map((q, i) => (
             <div key={q.id} className="rounded-2xl border border-slate-200 bg-white p-4">
               <p className="text-sm font-medium text-slate-800">{i + 1}. {q.text || "(geen vraagtekst)"}</p>
               <div className="mt-2">
-                <ResultView question={q} values={results[q.id] ?? []} />
+                <ResultView question={q} counts={countsByQ[q.id] ?? []} openValues={openByQ[q.id] ?? []} />
               </div>
             </div>
           ))}
@@ -294,36 +327,45 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o:
   );
 }
 
-function ResultView({ question, values }: { question: SurveyQuestion; values: string[] }) {
-  if (values.length === 0) return <p className="text-sm text-slate-400">Nog geen antwoorden.</p>;
-
+function ResultView({
+  question,
+  counts,
+  openValues,
+}: {
+  question: SurveyQuestion;
+  counts: { value: string; n: number }[];
+  openValues: string[];
+}) {
   if (question.type === "open") {
+    if (openValues.length === 0) return <p className="text-sm text-slate-400">Nog geen antwoorden.</p>;
     return (
       <ul className="space-y-1">
-        {values.map((v, i) => (
+        {openValues.map((v, i) => (
           <li key={i} className="rounded-lg bg-slate-50 px-3 py-1.5 text-sm text-slate-700">{v}</li>
         ))}
       </ul>
     );
   }
 
+  const total = counts.reduce((s, c) => s + c.n, 0);
+  if (total === 0) return <p className="text-sm text-slate-400">Nog geen antwoorden.</p>;
+
   let buckets: string[];
   if (question.type === "meerkeuze") buckets = question.options;
   else if (question.type === "janee") buckets = ["Ja", "Nee"];
   else buckets = ["1", "2", "3", "4", "5"];
 
-  const total = values.length;
-  const count = (b: string) => values.filter((v) => v === b).length;
+  const countOf = (b: string) => counts.find((c) => c.value === b)?.n ?? 0;
+  const gemiddelde =
+    question.type === "schaal"
+      ? (counts.reduce((s, c) => s + (parseInt(c.value, 10) || 0) * c.n, 0) / total).toFixed(1)
+      : null;
 
   return (
     <div className="space-y-1.5">
-      {question.type === "schaal" && (
-        <p className="text-xs text-slate-500">
-          Gemiddelde: {(values.reduce((s, v) => s + (parseInt(v, 10) || 0), 0) / total).toFixed(1)}
-        </p>
-      )}
+      {gemiddelde && <p className="text-xs text-slate-500">Gemiddelde: {gemiddelde}</p>}
       {buckets.map((b) => {
-        const c = count(b);
+        const c = countOf(b);
         const pct = Math.round((c / total) * 100);
         return (
           <div key={b}>

@@ -41,10 +41,19 @@ export default async function VerslagPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="text-2xl font-bold text-slate-900">Eindverslag opbouwen</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-2xl font-bold text-slate-900">Eindverslag opbouwen</h1>
+        <a
+          href="/api/export"
+          className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900"
+        >
+          ⬇ Exporteer mijn PWS (Word)
+        </a>
+      </div>
       <p className="mt-1 text-slate-500">
         De onderdelen die in je definitieve verslag horen. Vink af wat klaar is en houd per hoofdstuk
-        notities bij. Veel inhoud staat al in de fases — die zie je hier per hoofdstuk terug.
+        notities bij. Veel inhoud staat al in de fases — die zie je hier per hoofdstuk terug. Met de
+        exportknop bundel je alles (fase-inhoud, bronnen en logboek) tot één Word-startdocument.
       </p>
       <div className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
         <p className="font-semibold">Eisen Maerlant-Lyceum</p>

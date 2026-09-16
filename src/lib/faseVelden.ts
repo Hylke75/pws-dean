@@ -144,9 +144,69 @@ export const FASE_HULP: Record<number, FaseHulp> = {
     aanpak: ["Geef een onderbouwd antwoord op de hoofdvraag.", "Zorg dat je conclusie volgt uit je deelvragen — geen nieuwe informatie."],
     letOp: ["De conclusie is een antwoord, geen samenvatting."],
   },
-  11: {
-    aanpak: ["Wees eerlijk over de betrouwbaarheid en beperkingen.", "Benoem wat je anders zou doen en welk vervolgonderzoek interessant is."],
-    letOp: ["Kritisch zijn op je eigen onderzoek levert juist punten op."],
+  6: {
+    aanpak: ["Neem je enquête af / houd je interviews / voer je experiment uit.", "Verzamel genoeg data (denk aan voldoende respondenten of metingen).", "Bewaar alle ruwe gegevens meteen goed."],
+    letOp: ["Noteer precies hoeveel mensen of metingen je hebt — dat heb je nodig bij je methode en betrouwbaarheid."],
+  },
+  7: {
+    aanpak: ["Zet je resultaten overzichtelijk neer (tabel of categorieën).", "Maak een eerste analyse: wat springt eruit?", "Breng alles wat je al hebt samen tot één concept."],
+    letOp: ["Doel van school: eind oktober is ongeveer 50–75% af."],
+  },
+  8: {
+    aanpak: ["Zoek patronen, verschillen en opvallende uitkomsten.", "Maak grafieken of tabellen waar dat helpt.", "Koppel elke analyse aan een deelvraag."],
+    letOp: ["Beschrijf in de tekst wat een grafiek laat zien — laat 'm niet voor zichzelf spreken."],
+  },
+  9: {
+    aanpak: ["Beantwoord elke deelvraag apart.", "Combineer je eigen resultaten met wat je bronnen zeggen."],
+    letOp: ["Een deelvraag beantwoorden is een onderbouwd antwoord geven, niet alleen data herhalen."],
+  },
+  12: {
+    aanpak: ["Voeg alle onderdelen samen: inleiding, theorie, methode, resultaten, analyse, conclusie en discussie.", "Zorg voor een rode draad: vraag → onderzoek → antwoord."],
+    letOp: ["Het hoeft nog niet perfect — het moet compleet zijn."],
+  },
+  13: {
+    aanpak: ["Lever je complete versie op tijd in bij je begeleider.", "Vraag gericht: op welke onderdelen wil je feedback?"],
+    letOp: ["Hoe concreter je vraag, hoe bruikbaarder de feedback."],
+  },
+  14: {
+    aanpak: ["Loop de opmerkingen punt voor punt langs.", "Verbeter of vul aan wat nog onvoldoende was."],
+    letOp: ["Noteer wat je hebt aangepast — handig voor je reflectie."],
+  },
+  15: {
+    aanpak: ["Werk eventuele achterstanden weg.", "Vul ontbrekende bronnen, gegevens of teksten aan."],
+    letOp: ["Plan hier geen grote nieuwe onderdelen; het is een buffer."],
+  },
+  16: {
+    aanpak: ["Loop het hele onderzoek nog eens kritisch door.", "Check of hoofdvraag, onderzoek, resultaten en conclusie op elkaar aansluiten."],
+  },
+  17: {
+    aanpak: ["Verbeter tekst en structuur.", "Loop de bronvermelding (APA) na.", "Verwerk afbeeldingen, grafieken en bijlagen netjes."],
+  },
+  18: {
+    aanpak: ["Maak je logboek compleet (minimaal 80 uur).", "Bespreek de laatste versie nog één keer met je begeleider."],
+    letOp: ["Het logboek moet tijdens het PWS zijn bijgehouden, niet achteraf."],
+  },
+  19: {
+    aanpak: ["Verwerk de laatste feedback.", "Loop spelling, bronnen, opmaak en de beoordelingscriteria na."],
+    letOp: ["Daarna niets groots meer veranderen."],
+  },
+  20: {
+    aanpak: ["Maak het definitieve bestand.", "Controleer of werkelijk alles aanwezig is, inclusief de bijlagen."],
+  },
+  21: {
+    aanpak: ["Lever je werkstuk in vóór de deadline.", "Bewaar een kopie voor jezelf."],
+    letOp: ["Check de exacte inlevermanier en -datum bij je begeleider."],
+  },
+  22: {
+    aanpak: [
+      "Bouw je presentatie op rond vier vragen: wat wilde ik weten? → hoe heb ik het onderzocht? → wat heb ik ontdekt? → wat is mijn conclusie?",
+      "Bedenk wat je toont (poster, grafieken, een product) en houd het simpel te volgen.",
+      "Oefen je verhaal hardop en bereid je voor op vragen.",
+    ],
+    letOp: ["Familie en jongere leerlingen kijken mee — leg het uit alsof zij je onderwerp niet kennen."],
+  },
+  23: {
+    aanpak: ["Sta bij je stand en licht je onderzoek toe.", "Wees trots: je laat zien wat je in maanden werk hebt bereikt."],
   },
 };
 

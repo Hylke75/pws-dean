@@ -1,24 +1,48 @@
 import type { Source } from "@/lib/types";
 import { fmtDate } from "@/lib/dates";
 
-/** Bouwt een APA-achtige bronvermelding uit de losse velden. */
+/** Bouwt een APA-achtige bronvermelding, afgestemd op het brontype. */
 export function toApa(s: Source): string {
-  const parts: string[] = [];
   const author = s.authors?.trim();
-  const year = s.year?.trim();
+  const year = s.year?.trim() || "z.d.";
+  const title = s.title.trim().replace(/\.?$/, "");
+  const publisher = s.publisher?.trim();
+  const url = s.url?.trim();
+  const geraadpleegd = s.accessed_on ? `Geraadpleegd op ${fmtDate(s.accessed_on)}` : "";
 
-  if (author) parts.push(author + ".");
-  parts.push(`(${year || "z.d."}).`);
-  parts.push(s.title.trim().replace(/\.?$/, "."));
+  const start = author ? `${author.replace(/\.?$/, ".")} (${year}).` : `(${year}).`;
+  const parts: string[] = [start];
 
-  if (s.publisher?.trim()) parts.push(s.publisher.trim().replace(/\.?$/, "."));
-
-  if (s.url?.trim()) {
-    if (s.accessed_on) {
-      parts.push(`Geraadpleegd op ${fmtDate(s.accessed_on)}, van ${s.url.trim()}`);
-    } else {
-      parts.push(s.url.trim());
-    }
+  switch (s.source_type) {
+    case "boek":
+      // Auteur (jaar). Titel. Uitgever.
+      parts.push(`${title}.`);
+      if (publisher) parts.push(`${publisher.replace(/\.?$/, ".")}`);
+      break;
+    case "artikel":
+      // Auteur (jaar). Titel. Tijdschrift/Krant. [url]
+      parts.push(`${title}.`);
+      if (publisher) parts.push(`${publisher.replace(/\.?$/, ".")}`);
+      if (url) parts.push(url);
+      break;
+    case "video":
+      // Auteur (jaar). Titel [Video]. Platform. url
+      parts.push(`${title} [Video].`);
+      if (publisher) parts.push(`${publisher.replace(/\.?$/, ".")}`);
+      if (url) parts.push(url);
+      break;
+    case "interview":
+      // Auteur (rol). Persoonlijke communicatie, datum.
+      parts.push(`Persoonlijke communicatie${geraadpleegd ? `, ${geraadpleegd.toLowerCase()}` : ""}.`);
+      break;
+    case "website":
+    default:
+      // Auteur (jaar). Titel. Sitenaam. Geraadpleegd op …, van url
+      parts.push(`${title}.`);
+      if (publisher) parts.push(`${publisher.replace(/\.?$/, ".")}`);
+      if (url) parts.push(geraadpleegd ? `${geraadpleegd}, van ${url}` : url);
+      break;
   }
-  return parts.join(" ");
+
+  return parts.filter(Boolean).join(" ");
 }

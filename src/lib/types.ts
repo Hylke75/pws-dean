@@ -130,6 +130,23 @@ export type SurveyQuestion = {
   order_index: number;
 };
 
+export type Interview = {
+  id: string;
+  respondent: string | null;
+  rol: string | null;
+  datum: string | null;
+  phase_id: string | null;
+  created_at: string;
+};
+
+export type InterviewItem = {
+  id: string;
+  interview_id: string;
+  vraag: string | null;
+  antwoord: string | null;
+  order_index: number;
+};
+
 export type VerslagSectie = {
   section_key: string;
   status: "te_doen" | "bezig" | "klaar";

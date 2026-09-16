@@ -7,7 +7,16 @@ import type { ChecklistItem } from "@/lib/types";
 export default function Checklist({ phaseId, initial }: { phaseId: string; initial: ChecklistItem[] }) {
   const [items, setItems] = useState<ChecklistItem[]>(initial);
   const [text, setText] = useState("");
+  const [editId, setEditId] = useState<string | null>(null);
   const supabase = createClient();
+
+  async function saveText(item: ChecklistItem, value: string) {
+    const t = value.trim();
+    setEditId(null);
+    if (!t || t === item.text) return;
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, text: t } : i)));
+    await supabase.from("pws_checklist_items").update({ text: t }).eq("id", item.id);
+  }
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
@@ -56,9 +65,23 @@ export default function Checklist({ phaseId, initial }: { phaseId: string; initi
                 </svg>
               )}
             </button>
-            <span className={`flex-1 text-sm ${item.done ? "text-slate-400 line-through" : "text-slate-700"}`}>
-              {item.text}
-            </span>
+            {editId === item.id ? (
+              <input
+                autoFocus
+                defaultValue={item.text}
+                onBlur={(e) => saveText(item, e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") setEditId(null); }}
+                className="flex-1 rounded border border-slate-200 px-2 py-0.5 text-sm outline-none focus:border-emerald-500"
+              />
+            ) : (
+              <span
+                onClick={() => setEditId(item.id)}
+                title="Klik om te bewerken"
+                className={`flex-1 cursor-text text-sm ${item.done ? "text-slate-400 line-through" : "text-slate-700"}`}
+              >
+                {item.text}
+              </span>
+            )}
             <button
               onClick={() => remove(item.id)}
               className="opacity-0 transition group-hover:opacity-100 text-slate-300 hover:text-red-500"

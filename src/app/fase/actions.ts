@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { sendMail, shell } from "@/lib/email";
+import { sendMail, shell, esc } from "@/lib/email";
 
 type Recipient = { email: string | null; full_name: string | null };
 
@@ -50,7 +50,7 @@ export async function submitPhase(phaseId: string) {
       subject: `PWS ingediend: ${phase.title}`,
       html: shell(
         `Ingediend ter beoordeling: ${phase.title}`,
-        `<p>${wie} heeft fase <strong>${phase.order_index} — ${phase.title}</strong> ingediend en vraagt om jouw feedback.</p>`,
+        `<p>${esc(wie)} heeft fase <strong>${phase.order_index} — ${esc(phase.title)}</strong> ingediend en vraagt om jouw feedback.</p>`,
         site ? `${site}/fase/${phaseId}` : undefined,
       ),
     });
@@ -120,7 +120,7 @@ export async function reviewPhase(
       html: shell(
         `Feedback op fase ${phase.order_index}: ${phase.title}`,
         `<p>Je ouder heeft je werk beoordeeld: <strong>${label}</strong>.</p>${
-          feedback.trim() ? `<p style="white-space:pre-wrap">${feedback.trim()}</p>` : ""
+          feedback.trim() ? `<p style="white-space:pre-wrap">${esc(feedback.trim())}</p>` : ""
         }`,
         site ? `${site}/fase/${phaseId}` : undefined,
       ),
