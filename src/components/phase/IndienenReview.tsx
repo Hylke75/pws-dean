@@ -20,12 +20,12 @@ function ago(iso: string) {
 export default function IndienenReview({
   phaseId,
   reviewStatus,
-  isBegeleider,
+  isReviewer,
   reviews,
 }: {
   phaseId: string;
   reviewStatus: ReviewStatus;
-  isBegeleider: boolean;
+  isReviewer: boolean;
   reviews: Review[];
 }) {
   const router = useRouter();
@@ -101,7 +101,7 @@ export default function IndienenReview({
       )}
 
       {/* Actie */}
-      {isBegeleider ? (
+      {isReviewer ? (
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="mb-2 text-sm font-medium text-slate-800">Feedback geven</p>
           <div className="mb-2 flex flex-wrap gap-1">
@@ -136,7 +136,7 @@ export default function IndienenReview({
         <div>
           {status === "ingediend" ? (
             <p className="rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-700">
-              Ingediend — je begeleider bekijkt je werk. Je krijgt bericht zodra er feedback is.
+              Ingediend — je ouders bekijken je werk. Je krijgt bericht zodra er feedback is.
             </p>
           ) : (
             <button
@@ -144,7 +144,7 @@ export default function IndienenReview({
               disabled={busy}
               className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
             >
-              {busy ? "Indienen…" : status === "wijzigingen_nodig" ? "Opnieuw indienen bij begeleider" : "Indienen bij begeleider"}
+              {busy ? "Indienen…" : status === "wijzigingen_nodig" ? "Opnieuw indienen ter beoordeling" : "Indienen ter beoordeling"}
             </button>
           )}
         </div>

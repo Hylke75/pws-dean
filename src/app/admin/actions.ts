@@ -30,7 +30,7 @@ export async function updatePlanning(formData: FormData): Promise<PlanningResult
   if (!user) return { ok: false, error: "Niet ingelogd" };
 
   const { data: me } = await supabase.from("pws_profiles").select("role").eq("id", user.id).single();
-  if (!me || me.role !== "begeleider") return { ok: false, error: "Geen rechten" };
+  if (!me || me.role === "student") return { ok: false, error: "Geen rechten" };
 
   const { data: current } = await supabase
     .from("pws_phases")

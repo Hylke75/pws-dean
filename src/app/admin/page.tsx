@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const { profile } = await getSession();
-  if (!profile || profile.role !== "begeleider") redirect("/");
+  if (!profile || profile.role === "student") redirect("/");
 
   const supabase = await createClient();
   const [{ data: phases }, { data: changes }] = await Promise.all([

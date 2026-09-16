@@ -37,7 +37,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
   const { id } = await params;
   const supabase = await createClient();
   const { profile } = await getSession();
-  const isBegeleider = profile?.role === "begeleider";
+  const isReviewer = profile?.role !== "student";
 
   const { data: phase } = await supabase.from("pws_phases").select("*").eq("id", id).single();
   if (!phase) notFound();
@@ -131,11 +131,11 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
         <CriteriaChecklist initial={(criteria as ToetsCriterium[]) ?? []} />
       </Section>
 
-      <Section title="Nakijken door begeleider" hint="Dien in en ontvang gerichte feedback.">
+      <Section title="Nakijken & feedback" hint="Dien in bij je ouders en ontvang gerichte feedback.">
         <IndienenReview
           phaseId={p.id}
           reviewStatus={p.review_status}
-          isBegeleider={isBegeleider}
+          isReviewer={isReviewer}
           reviews={(reviews as Review[]) ?? []}
         />
       </Section>

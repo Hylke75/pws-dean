@@ -35,7 +35,7 @@ export async function submitPhase(phaseId: string) {
   const wie = me?.full_name ?? "De leerling";
 
   const { data: recipients } = await supabase.rpc("pws_notify_role", {
-    p_role: "begeleider",
+    p_role: "ouder",
     p_type: "system",
     p_title: `Ingediend ter beoordeling: ${phase.title}`,
     p_body: `${wie} heeft fase ${phase.order_index} "${phase.title}" ingediend.`,
@@ -75,7 +75,7 @@ export async function reviewPhase(
   if (!user) return { ok: false, error: "Niet ingelogd" };
 
   const { data: me } = await supabase.from("pws_profiles").select("role").eq("id", user.id).single();
-  if (!me || me.role !== "begeleider") return { ok: false, error: "Alleen de begeleider kan beoordelen" };
+  if (!me || me.role === "student") return { ok: false, error: "Alleen een ouder kan beoordelen" };
 
   const { data: phase } = await supabase
     .from("pws_phases")
@@ -107,7 +107,7 @@ export async function reviewPhase(
     p_role: "student",
     p_type: "system",
     p_title: `Feedback op ${phase.title}: ${label}`,
-    p_body: feedback.trim() ? feedback.trim().slice(0, 160) : `De begeleider heeft je fase beoordeeld: ${label}.`,
+    p_body: feedback.trim() ? feedback.trim().slice(0, 160) : `Je ouder heeft je fase beoordeeld: ${label}.`,
     p_link: `/fase/${phaseId}`,
   });
 
@@ -119,7 +119,7 @@ export async function reviewPhase(
       subject: `Feedback op je PWS: ${phase.title}`,
       html: shell(
         `Feedback op fase ${phase.order_index}: ${phase.title}`,
-        `<p>Je begeleider heeft je werk beoordeeld: <strong>${label}</strong>.</p>${
+        `<p>Je ouder heeft je werk beoordeeld: <strong>${label}</strong>.</p>${
           feedback.trim() ? `<p style="white-space:pre-wrap">${feedback.trim()}</p>` : ""
         }`,
         site ? `${site}/fase/${phaseId}` : undefined,
