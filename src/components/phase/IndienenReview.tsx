@@ -44,7 +44,7 @@ export default function IndienenReview({
     setBusy(false);
     if (res.ok) {
       setStatus("ingediend");
-      setMsg("Ingediend bij je begeleider ✓");
+      setMsg("Ingediend bij je ouders ✓");
       router.refresh();
     } else {
       setMsg(res.error ?? "Er ging iets mis");
