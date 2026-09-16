@@ -89,7 +89,7 @@ Beoordeel deze fase tegen de criteria en geef je feedback.`;
     model: "claude-opus-4-8",
     max_tokens: 2000,
     system,
-    output_config: { format: { type: "json_schema", name: "pws_feedback", schema: FEEDBACK_SCHEMA } },
+    output_config: { format: { type: "json_schema", schema: FEEDBACK_SCHEMA } },
     messages: [{ role: "user", content: user }],
   } as Anthropic.MessageCreateParamsNonStreaming);
 
