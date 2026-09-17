@@ -167,7 +167,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
       </Section>
 
       <Section title="Eigen taken" hint="Losse to-do's die je zelf toevoegt.">
-        <Checklist phaseId={p.id} initial={(checklist as ChecklistItem[]) ?? []} />
+        <Checklist phaseId={p.id} initial={(checklist as ChecklistItem[]) ?? []} suggesties={hulp?.aanpak ?? []} />
       </Section>
 
       {sources && (sources as Source[]).length > 0 && (

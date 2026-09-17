@@ -4,11 +4,28 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ChecklistItem } from "@/lib/types";
 
-export default function Checklist({ phaseId, initial }: { phaseId: string; initial: ChecklistItem[] }) {
+export default function Checklist({
+  phaseId,
+  initial,
+  suggesties = [],
+}: {
+  phaseId: string;
+  initial: ChecklistItem[];
+  suggesties?: string[];
+}) {
   const [items, setItems] = useState<ChecklistItem[]>(initial);
   const [text, setText] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const supabase = createClient();
+
+  const nietToegevoegd = suggesties.filter((s) => !items.some((i) => i.text === s));
+
+  async function neemStappenOver() {
+    if (nietToegevoegd.length === 0) return;
+    const rows = nietToegevoegd.map((s, i) => ({ phase_id: phaseId, text: s, order_index: items.length + i }));
+    const { data } = await supabase.from("pws_checklist_items").insert(rows).select();
+    if (data) setItems((prev) => [...prev, ...(data as ChecklistItem[])]);
+  }
 
   async function saveText(item: ChecklistItem, value: string) {
     const t = value.trim();
@@ -94,6 +111,14 @@ export default function Checklist({ phaseId, initial }: { phaseId: string; initi
           </li>
         ))}
       </ul>
+      {nietToegevoegd.length > 0 && (
+        <button
+          onClick={neemStappenOver}
+          className="mt-2 rounded-lg border border-dashed border-emerald-300 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+        >
+          + Neem de {nietToegevoegd.length} stappen van &quot;zo pak je dit aan&quot; over als taken
+        </button>
+      )}
       <form onSubmit={add} className="mt-2 flex gap-2">
         <input
           value={text}
