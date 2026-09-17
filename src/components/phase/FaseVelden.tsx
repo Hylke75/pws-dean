@@ -14,7 +14,7 @@ export default function FaseVelden({
   initial: Record<string, string>;
 }) {
   const [data, setData] = useState<Record<string, string>>(initial);
-  const [saved, setSaved] = useState<"idle" | "saving" | "done">("idle");
+  const [saved, setSaved] = useState<"idle" | "saving" | "done" | "error">("idle");
   const supabase = createClient();
 
   function change(key: string, value: string) {
@@ -23,7 +23,11 @@ export default function FaseVelden({
 
   async function save() {
     setSaved("saving");
-    await supabase.from("pws_phases").update({ veld_data: data }).eq("id", phaseId);
+    const { error } = await supabase.from("pws_phases").update({ veld_data: data }).eq("id", phaseId);
+    if (error) {
+      setSaved("error");
+      return;
+    }
     setSaved("done");
     setTimeout(() => setSaved("idle"), 1500);
   }
@@ -33,7 +37,7 @@ export default function FaseVelden({
       {velden.map((v) => (
         <div key={v.key}>
           <label className="block text-sm font-medium text-slate-700">{v.label}</label>
-          {v.hint && <p className="mb-1 text-xs text-slate-400">{v.hint}</p>}
+          {v.hint && <p className="mb-1 text-xs text-slate-500">{v.hint}</p>}
           {v.type === "kort" ? (
             <input
               value={data[v.key] ?? ""}
@@ -59,8 +63,14 @@ export default function FaseVelden({
           )}
         </div>
       ))}
-      <div className="h-4 text-xs text-slate-400">
-        {saved === "saving" ? "Opslaan…" : saved === "done" ? "Opgeslagen ✓" : "Wordt automatisch opgeslagen"}
+      <div className={`h-4 text-xs ${saved === "error" ? "text-red-600" : "text-slate-500"}`}>
+        {saved === "saving"
+          ? "Opslaan…"
+          : saved === "done"
+            ? "Opgeslagen ✓"
+            : saved === "error"
+              ? "Opslaan mislukt — controleer je verbinding en klik nog eens buiten het veld."
+              : "Wordt automatisch opgeslagen"}
       </div>
     </div>
   );

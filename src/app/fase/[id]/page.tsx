@@ -199,7 +199,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
           <ul className="space-y-1.5">
             {(changes as DeadlineChange[]).map((c) => (
               <li key={c.id} className="text-sm text-slate-500">
-                <span className="text-slate-400">{fmtDate(c.created_at.slice(0, 10))}:</span>{" "}
+                <span className="text-slate-500">{fmtDate(c.created_at.slice(0, 10))}:</span>{" "}
                 {c.field === "deadline" ? "Deadline" : c.field === "start_date" ? "Startdatum" : c.field}{" "}
                 {c.old_value ?? "—"} → <span className="font-medium text-slate-700">{c.new_value ?? "—"}</span>
               </li>
@@ -215,7 +215,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   return (
     <section className="mt-6">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{title}</h2>
-      {hint && <p className="mb-2 mt-0.5 text-xs text-slate-400">{hint}</p>}
+      {hint && <p className="mb-2 mt-0.5 text-xs text-slate-500">{hint}</p>}
       <div className={`${hint ? "" : "mt-2"} rounded-2xl border border-slate-200 bg-white p-4`}>{children}</div>
     </section>
   );

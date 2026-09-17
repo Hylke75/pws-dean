@@ -89,7 +89,7 @@ export default function BronnenClient({ initial, phases }: { initial: Source[]; 
         </div>
 
         {items.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+          <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
             Nog geen bronnen. Voeg je eerste bron toe →
           </p>
         ) : (
@@ -106,7 +106,7 @@ export default function BronnenClient({ initial, phases }: { initial: Source[]; 
                   </div>
                   <button
                     onClick={() => remove(s.id)}
-                    className="opacity-0 transition group-hover:opacity-100 text-slate-300 hover:text-red-500"
+                    className="opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 text-slate-300 hover:text-red-500"
                     aria-label="Verwijderen"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

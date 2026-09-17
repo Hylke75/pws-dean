@@ -9,6 +9,17 @@ import type { Phase } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+// Buiten de component (Date.now mag niet in render-scope): verwachte uren o.b.v. looptijd.
+function verwachteUren(startISO: string | null, eindISO: string | null): number | null {
+  const start = parseDate(startISO);
+  const eind = parseDate(eindISO);
+  if (!start || !eind) return null;
+  const totaal = (eind.getTime() - start.getTime()) / 86400000;
+  if (totaal <= 0) return null;
+  const verstreken = Math.max(0, Math.min(totaal, (Date.now() - start.getTime()) / 86400000));
+  return Math.round((80 * verstreken) / totaal);
+}
+
 export default async function Dashboard() {
   const supabase = await createClient();
   const { profile } = await getSession();
@@ -47,14 +58,7 @@ export default async function Dashboard() {
   const eersteStap = huidigeHulp?.aanpak?.[0];
 
   // Uren-tempo: verwacht t.o.v. de looptijd (richtlijn 80 u).
-  const startAll = parseDate(phases[0]?.start_date ?? null);
-  const eindAll = parseDate(phases[phases.length - 1]?.deadline ?? null);
-  let verwachtUur: number | null = null;
-  if (startAll && eindAll) {
-    const totaal = (eindAll.getTime() - startAll.getTime()) / 86400000;
-    const verstreken = Math.max(0, Math.min(totaal, (Date.now() - startAll.getTime()) / 86400000));
-    if (totaal > 0) verwachtUur = Math.round((80 * verstreken) / totaal);
-  }
+  const verwachtUur = verwachteUren(phases[0]?.start_date ?? null, phases[phases.length - 1]?.deadline ?? null);
 
   const firstName = profile?.full_name?.split(" ")[0] ?? "daar";
   const isReviewer = profile?.role !== "student";
@@ -117,19 +121,19 @@ export default async function Dashboard() {
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
             <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
           </div>
-          <p className="mt-2 text-xs text-slate-400">{done} van {phases.length} fases klaar</p>
+          <p className="mt-2 text-xs text-slate-500">{done} van {phases.length} fases klaar</p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-500">Logboek</p>
           <p className="mt-1 text-3xl font-bold text-slate-900">
-            {totalHours.toFixed(1)}<span className="text-lg text-slate-400"> / 80 u</span>
+            {totalHours.toFixed(1)}<span className="text-lg text-slate-500"> / 80 u</span>
           </p>
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
             <div className="h-full rounded-full bg-sky-500" style={{ width: `${Math.min(100, (totalHours / 80) * 100)}%` }} />
           </div>
           {verwachtUur != null && done < phases.length ? (
-            <p className={`mt-2 text-xs ${totalHours + 2 < verwachtUur ? "text-amber-600" : "text-slate-400"}`}>
+            <p className={`mt-2 text-xs ${totalHours + 2 < verwachtUur ? "text-amber-600" : "text-slate-500"}`}>
               Op schema is nu ± {verwachtUur} u
             </p>
           ) : (
@@ -174,7 +178,7 @@ export default async function Dashboard() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-slate-900">{p.title}</p>
-                  <p className="text-xs text-slate-400">{fmtRange(p.start_date, p.deadline)}</p>
+                  <p className="text-xs text-slate-500">{fmtRange(p.start_date, p.deadline)}</p>
                 </div>
                 {isHuidig && <span className="hidden rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white sm:inline">nu</span>}
                 {overdue && <span className="hidden text-xs font-semibold text-red-600 sm:block">te laat</span>}

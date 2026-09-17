@@ -87,7 +87,7 @@ export default function InterviewDetail({
         {items.map((it, i) => (
           <div key={it.id} className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="flex items-start gap-2">
-              <span className="mt-2 text-sm font-semibold text-slate-400">{i + 1}.</span>
+              <span className="mt-2 text-sm font-semibold text-slate-500">{i + 1}.</span>
               <div className="min-w-0 flex-1 space-y-2">
                 <input
                   value={it.vraag ?? ""}

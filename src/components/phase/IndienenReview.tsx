@@ -92,7 +92,7 @@ export default function IndienenReview({
                 >
                   {r.status === "goedgekeurd" ? "Goedgekeurd" : r.status === "wijzigingen_nodig" ? "Wijzigingen nodig" : "Opmerking"}
                 </span>
-                <span className="text-xs text-slate-400">{ago(r.created_at)}</span>
+                <span className="text-xs text-slate-500">{ago(r.created_at)}</span>
               </div>
               {r.feedback && <p className="mt-1.5 whitespace-pre-wrap text-sm text-slate-700">{r.feedback}</p>}
             </li>

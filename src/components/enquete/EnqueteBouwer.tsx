@@ -170,7 +170,7 @@ export default function EnqueteBouwer({
           {questions.map((q, i) => (
             <div key={q.id} className="rounded-2xl border border-slate-200 bg-white p-4">
               <div className="flex items-start gap-2">
-                <span className="mt-2 text-sm font-semibold text-slate-400">{i + 1}.</span>
+                <span className="mt-2 text-sm font-semibold text-slate-500">{i + 1}.</span>
                 <div className="min-w-0 flex-1">
                   <input
                     value={q.text}
@@ -206,8 +206,8 @@ export default function EnqueteBouwer({
                       Verplicht
                     </label>
                     <div className="ml-auto flex items-center gap-1">
-                      <button onClick={() => move(q.id, -1)} className="rounded p-1 text-slate-400 hover:bg-slate-100" aria-label="Omhoog">▲</button>
-                      <button onClick={() => move(q.id, 1)} className="rounded p-1 text-slate-400 hover:bg-slate-100" aria-label="Omlaag">▼</button>
+                      <button onClick={() => move(q.id, -1)} className="rounded p-1 text-slate-500 hover:bg-slate-100" aria-label="Omhoog">▲</button>
+                      <button onClick={() => move(q.id, 1)} className="rounded p-1 text-slate-500 hover:bg-slate-100" aria-label="Omlaag">▼</button>
                       <button onClick={() => removeQuestion(q.id)} className="rounded p-1 text-slate-300 hover:text-red-500" aria-label="Verwijderen">✕</button>
                     </div>
                   </div>
@@ -222,7 +222,7 @@ export default function EnqueteBouwer({
                     />
                   )}
                   {q.type === "schaal" && (
-                    <p className="mt-2 text-xs text-slate-400">Invullers kiezen een cijfer van 1 (helemaal oneens) tot 5 (helemaal eens).</p>
+                    <p className="mt-2 text-xs text-slate-500">Invullers kiezen een cijfer van 1 (helemaal oneens) tot 5 (helemaal eens).</p>
                   )}
                 </div>
               </div>
@@ -245,7 +245,7 @@ export default function EnqueteBouwer({
         <div className="mt-4 space-y-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <p className="text-sm font-medium text-slate-800">Status</p>
-            <p className="mb-2 text-xs text-slate-400">Alleen een <strong>open</strong> enquête verzamelt antwoorden.</p>
+            <p className="mb-2 text-xs text-slate-500">Alleen een <strong>open</strong> enquête verzamelt antwoorden.</p>
             <div className="inline-flex rounded-lg border border-slate-200 p-1">
               {(["concept", "open", "gesloten"] as SurveyStatus[]).map((s) => (
                 <button
@@ -263,7 +263,7 @@ export default function EnqueteBouwer({
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <p className="text-sm font-medium text-slate-800">Deel deze link</p>
-            <p className="mb-2 text-xs text-slate-400">Iedereen met de link kan de enquête invullen (geen account nodig).</p>
+            <p className="mb-2 text-xs text-slate-500">Iedereen met de link kan de enquête invullen (geen account nodig).</p>
             <div className="flex gap-2">
               <input readOnly value={shareUrl} className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600" />
               <button
@@ -289,7 +289,7 @@ export default function EnqueteBouwer({
               </button>
             )}
           </div>
-          {questions.length === 0 && <p className="text-sm text-slate-400">Nog geen vragen.</p>}
+          {questions.length === 0 && <p className="text-sm text-slate-500">Nog geen vragen.</p>}
           {questions.map((q, i) => (
             <div key={q.id} className="rounded-2xl border border-slate-200 bg-white p-4">
               <p className="text-sm font-medium text-slate-800">{i + 1}. {q.text || "(geen vraagtekst)"}</p>
@@ -316,7 +316,7 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o:
             className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-emerald-500"
           />
           {options.length > 1 && (
-            <button onClick={() => onChange(options.filter((_, j) => j !== i))} className="text-slate-300 hover:text-red-500">✕</button>
+            <button onClick={() => onChange(options.filter((_, j) => j !== i))} aria-label="Optie verwijderen" className="text-slate-300 hover:text-red-500">✕</button>
           )}
         </div>
       ))}
@@ -337,7 +337,7 @@ function ResultView({
   openValues: string[];
 }) {
   if (question.type === "open") {
-    if (openValues.length === 0) return <p className="text-sm text-slate-400">Nog geen antwoorden.</p>;
+    if (openValues.length === 0) return <p className="text-sm text-slate-500">Nog geen antwoorden.</p>;
     return (
       <ul className="space-y-1">
         {openValues.map((v, i) => (
@@ -348,7 +348,7 @@ function ResultView({
   }
 
   const total = counts.reduce((s, c) => s + c.n, 0);
-  if (total === 0) return <p className="text-sm text-slate-400">Nog geen antwoorden.</p>;
+  if (total === 0) return <p className="text-sm text-slate-500">Nog geen antwoorden.</p>;
 
   let buckets: string[];
   if (question.type === "meerkeuze") buckets = question.options;

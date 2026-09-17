@@ -60,7 +60,7 @@ export default function ToetsPaneel({
             <>{data ? "Opnieuw controleren" : "Controleer mijn werk"}</>
           )}
         </button>
-        {at && <span className="text-xs text-slate-400">Laatst gecontroleerd: {new Date(at).toLocaleString("nl-NL")}</span>}
+        {at && <span className="text-xs text-slate-500">Laatst gecontroleerd: {new Date(at).toLocaleString("nl-NL")}</span>}
       </div>
 
       {state === "no_key" && (
@@ -116,7 +116,7 @@ export default function ToetsPaneel({
             <p className="mt-1 text-sm text-slate-800">{data.volgende_stap}</p>
           </div>
 
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-500">
             Automatische controle tegen de eisen van deze fase — je begeleider blijft leidend. Stem het gebruik van
             hulpmiddelen altijd met je begeleider af.
           </p>

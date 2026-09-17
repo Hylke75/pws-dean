@@ -4,6 +4,11 @@ import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Attachment } from "@/lib/types";
 
+// Buiten de component: uniek pad voor een upload (Date.now mag niet tijdens render).
+function maakStoragePad(userId: string, phaseId: string, filename: string): string {
+  return `${userId}/${phaseId}/${Date.now()}-${filename}`;
+}
+
 export default function Attachments({ phaseId, initial }: { phaseId: string; initial: Attachment[] }) {
   const [items, setItems] = useState<Attachment[]>(initial);
   const [label, setLabel] = useState("");
@@ -35,7 +40,7 @@ export default function Attachments({ phaseId, initial }: { phaseId: string; ini
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const path = `${user?.id ?? "anon"}/${phaseId}/${Date.now()}-${file.name}`;
+    const path = maakStoragePad(user?.id ?? "anon", phaseId, file.name);
     const { error } = await supabase.storage.from("pws-files").upload(path, file);
     if (!error) {
       const { data } = await supabase
@@ -70,7 +75,7 @@ export default function Attachments({ phaseId, initial }: { phaseId: string; ini
       <ul className="space-y-1.5">
         {items.map((a) => (
           <li key={a.id} className="group flex items-center gap-2.5 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-            <span className="text-slate-400">{a.kind === "file" ? "📎" : "🔗"}</span>
+            <span className="text-slate-500">{a.kind === "file" ? "📎" : "🔗"}</span>
             {a.kind === "link" ? (
               <a href={a.url ?? "#"} target="_blank" rel="noreferrer" className="flex-1 truncate text-sm text-sky-700 hover:underline">
                 {a.label}
@@ -82,7 +87,7 @@ export default function Attachments({ phaseId, initial }: { phaseId: string; ini
             )}
             <button
               onClick={() => remove(a)}
-              className="opacity-0 transition group-hover:opacity-100 text-slate-300 hover:text-red-500"
+              className="opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 text-slate-300 hover:text-red-500"
               aria-label="Verwijderen"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -91,7 +96,7 @@ export default function Attachments({ phaseId, initial }: { phaseId: string; ini
             </button>
           </li>
         ))}
-        {items.length === 0 && <li className="text-sm text-slate-400">Nog geen bijlagen of links.</li>}
+        {items.length === 0 && <li className="text-sm text-slate-500">Nog geen bijlagen of links.</li>}
       </ul>
 
       <form onSubmit={addLink} className="mt-3 flex flex-wrap gap-2">

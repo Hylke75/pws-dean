@@ -65,13 +65,15 @@ export default function Checklist({
   return (
     <div>
       {items.length > 0 && (
-        <p className="mb-2 text-xs text-slate-400">{doneCount}/{items.length} afgevinkt</p>
+        <p className="mb-2 text-xs text-slate-500">{doneCount}/{items.length} afgevinkt</p>
       )}
       <ul className="space-y-1.5">
         {items.map((item) => (
           <li key={item.id} className="group flex items-center gap-2.5 rounded-lg px-1 py-1 hover:bg-slate-50">
             <button
               onClick={() => toggle(item)}
+              aria-pressed={item.done}
+              aria-label={item.done ? "Taak weer openzetten" : "Taak afvinken"}
               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
                 item.done ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 bg-white"
               }`}
@@ -91,17 +93,18 @@ export default function Checklist({
                 className="flex-1 rounded border border-slate-200 px-2 py-0.5 text-sm outline-none focus:border-emerald-500"
               />
             ) : (
-              <span
+              <button
                 onClick={() => setEditId(item.id)}
                 title="Klik om te bewerken"
-                className={`flex-1 cursor-text text-sm ${item.done ? "text-slate-400 line-through" : "text-slate-700"}`}
+                aria-label={`Taak bewerken: ${item.text}`}
+                className={`flex-1 cursor-text text-left text-sm ${item.done ? "text-slate-500 line-through" : "text-slate-700"}`}
               >
                 {item.text}
-              </span>
+              </button>
             )}
             <button
               onClick={() => remove(item.id)}
-              className="opacity-0 transition group-hover:opacity-100 text-slate-300 hover:text-red-500"
+              className="opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 text-slate-300 hover:text-red-500"
               aria-label="Verwijderen"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

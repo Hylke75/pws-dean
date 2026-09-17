@@ -1,26 +1,20 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: var(--font-geist-sans), system-ui, Arial, sans-serif;
+}
+
+/* WCAG 2.2 AA: consistente, zichtbare focus-indicator voor toetsenbordgebruik. */
+:focus-visible {
+  outline: 2px solid #059669; /* emerald-600 */
+  outline-offset: 2px;
+  border-radius: 3px;
 }

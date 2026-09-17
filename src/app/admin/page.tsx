@@ -46,7 +46,7 @@ export default async function AdminPage() {
           <ul className="space-y-1.5 rounded-2xl border border-slate-200 bg-white p-4">
             {(changes as DeadlineChange[]).map((c) => (
               <li key={c.id} className="text-sm text-slate-500">
-                <span className="text-slate-400">{fmtDate(c.created_at.slice(0, 10))}</span>{" "}
+                <span className="text-slate-500">{fmtDate(c.created_at.slice(0, 10))}</span>{" "}
                 — <Link href={`/fase/${c.phase_id}`} className="font-medium text-slate-700 hover:underline">{phaseTitle(c.phase_id)}</Link>:{" "}
                 {c.field === "deadline" ? "deadline" : c.field === "start_date" ? "startdatum" : c.field}{" "}
                 {c.old_value ?? "—"} → {c.new_value ?? "—"}

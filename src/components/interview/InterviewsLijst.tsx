@@ -39,7 +39,7 @@ export default function InterviewsLijst({ initial }: { initial: Interview[] }) {
       </form>
 
       {items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
           Nog geen interviews. Maak je eerste hierboven aan →
         </p>
       ) : (
@@ -50,7 +50,7 @@ export default function InterviewsLijst({ initial }: { initial: Interview[] }) {
                 <div className="min-w-0">
                   <p className="truncate font-medium text-slate-900">{it.respondent || "Naamloos interview"}</p>
                   {(it.rol || it.datum) && (
-                    <p className="text-xs text-slate-400">{[it.rol, it.datum ? fmtDate(it.datum) : null].filter(Boolean).join(" · ")}</p>
+                    <p className="text-xs text-slate-500">{[it.rol, it.datum ? fmtDate(it.datum) : null].filter(Boolean).join(" · ")}</p>
                   )}
                 </div>
               </Link>

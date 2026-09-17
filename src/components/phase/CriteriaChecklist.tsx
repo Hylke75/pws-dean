@@ -15,7 +15,7 @@ export default function CriteriaChecklist({ initial }: { initial: ToetsCriterium
   }
 
   if (items.length === 0) {
-    return <p className="text-sm text-slate-400">Voor deze fase zijn geen criteria vastgelegd.</p>;
+    return <p className="text-sm text-slate-500">Voor deze fase zijn geen criteria vastgelegd.</p>;
   }
 
   const done = items.filter((i) => i.done).length;
@@ -50,7 +50,7 @@ export default function CriteriaChecklist({ initial }: { initial: ToetsCriterium
                   </svg>
                 )}
               </span>
-              <span className={`text-sm ${item.done ? "text-slate-400 line-through" : "text-slate-700"}`}>
+              <span className={`text-sm ${item.done ? "text-slate-500 line-through" : "text-slate-700"}`}>
                 {item.text}
               </span>
             </button>

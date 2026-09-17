@@ -45,7 +45,7 @@ export default function EnquetesLijst({ initial, counts }: { initial: Survey[]; 
       </form>
 
       {items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
           Nog geen enquêtes. Maak je eerste hierboven aan →
         </p>
       ) : (
@@ -58,7 +58,7 @@ export default function EnquetesLijst({ initial, counts }: { initial: Survey[]; 
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-slate-900">{s.title}</p>
-                  <p className="text-xs text-slate-400">{counts[s.id] ?? 0} reactie{(counts[s.id] ?? 0) === 1 ? "" : "s"}</p>
+                  <p className="text-xs text-slate-500">{counts[s.id] ?? 0} reactie{(counts[s.id] ?? 0) === 1 ? "" : "s"}</p>
                 </div>
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[s.status]}`}>
                   {STATUS_LABEL[s.status]}

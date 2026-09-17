@@ -7,6 +7,8 @@ export default function WelkomKaart({ role }: { role: Role }) {
   const [zichtbaar, setZichtbaar] = useState(false);
 
   useEffect(() => {
+    // localStorage is alleen client-side beschikbaar; lezen kan pas na mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!localStorage.getItem("pws_welkom_weg")) setZichtbaar(true);
   }, []);
 

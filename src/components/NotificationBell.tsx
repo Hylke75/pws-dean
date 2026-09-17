@@ -29,6 +29,8 @@ export default function NotificationBell() {
   }
 
   useEffect(() => {
+    // Meldingen ophalen na mount + elke minuut verversen (async fetch, geen render-side state).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
     const id = setInterval(load, 60000);
     return () => clearInterval(id);
@@ -88,7 +90,7 @@ export default function NotificationBell() {
           </div>
           <div className="max-h-96 overflow-y-auto">
             {items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-slate-400">Nog geen meldingen.</p>
+              <p className="px-4 py-8 text-center text-sm text-slate-500">Nog geen meldingen.</p>
             ) : (
               items.map((n) => {
                 const inner = (
@@ -97,7 +99,7 @@ export default function NotificationBell() {
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-slate-800">{n.title}</p>
                       {n.body && <p className="mt-0.5 text-xs text-slate-500">{n.body}</p>}
-                      <p className="mt-0.5 text-[11px] text-slate-400">{ago(n.created_at)}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">{ago(n.created_at)}</p>
                     </div>
                   </div>
                 );

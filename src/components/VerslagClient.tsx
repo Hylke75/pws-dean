@@ -74,7 +74,7 @@ export default function VerslagClient({
         <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-100">
           <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
         </div>
-        <p className="mt-2 text-xs text-slate-400">
+        <p className="mt-2 text-xs text-slate-500">
           ≈ {totaalWoorden} woorden in je notities (~{pagina} pagina&apos;s) · richtlijn: minimaal 15 pagina&apos;s
         </p>
       </div>
@@ -92,7 +92,7 @@ export default function VerslagClient({
                 </span>
                 <button onClick={() => setOpenKey(open ? null : sec.key)} className="flex-1 text-left">
                   <p className="font-medium text-slate-900">{sec.title}</p>
-                  <p className="text-xs text-slate-400">{sec.description}</p>
+                  <p className="text-xs text-slate-500">{sec.description}</p>
                 </button>
                 {sec.bron && (
                   <span className="hidden rounded-full bg-sky-50 px-2 py-0.5 text-xs text-sky-700 sm:inline">
@@ -148,7 +148,7 @@ export default function VerslagClient({
                       placeholder="Notities of je concepttekst voor dit hoofdstuk."
                       className="w-full resize-y rounded-lg border border-slate-200 p-2.5 text-sm outline-none focus:border-emerald-500"
                     />
-                    <p className="mt-1 text-xs text-slate-400">{woorden(st.notes)} woorden</p>
+                    <p className="mt-1 text-xs text-slate-500">{woorden(st.notes)} woorden</p>
                   </div>
                 </div>
               )}

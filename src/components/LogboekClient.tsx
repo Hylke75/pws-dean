@@ -116,13 +116,13 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
           <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-100">
             <div className="h-full rounded-full bg-sky-500" style={{ width: `${Math.min(100, (totalHours / 80) * 100)}%` }} />
           </div>
-          <p className="mt-1.5 text-xs text-slate-400">
+          <p className="mt-1.5 text-xs text-slate-500">
             {totalHours >= 80 ? "Je hebt de 80-uur eis gehaald 🎉" : `Nog ${(80 - totalHours).toFixed(1)} uur te gaan.`}
           </p>
         </div>
 
         {items.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+          <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
             Nog geen logboekregels. Voeg je eerste werkmoment toe →
           </p>
         ) : (
@@ -133,8 +133,8 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
                   <div className="space-y-2">
                     <textarea value={eAct} onChange={(e) => setEAct(e.target.value)} rows={2} className="w-full resize-y rounded-lg border border-slate-200 p-2 text-sm outline-none focus:border-emerald-500" />
                     <div className="flex items-center gap-2">
-                      <input type="number" min="0" value={eH} onChange={(e) => setEH(e.target.value)} className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm" /> <span className="text-xs text-slate-400">u</span>
-                      <input type="number" min="0" max="59" value={eM} onChange={(e) => setEM(e.target.value)} className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm" /> <span className="text-xs text-slate-400">m</span>
+                      <input type="number" min="0" value={eH} onChange={(e) => setEH(e.target.value)} className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm" /> <span className="text-xs text-slate-500">u</span>
+                      <input type="number" min="0" max="59" value={eM} onChange={(e) => setEM(e.target.value)} className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm" /> <span className="text-xs text-slate-500">m</span>
                     </div>
                     <input value={eNext} onChange={(e) => setENext(e.target.value)} placeholder="Volgende stap" className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm outline-none focus:border-emerald-500" />
                     <div className="flex gap-2">
@@ -146,9 +146,9 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-medium text-slate-400">{fmtDate(it.log_date)}</span>
+                        <span className="text-xs font-medium text-slate-500">{fmtDate(it.log_date)}</span>
                         {it.begin_tijd && it.eind_tijd && (
-                          <span className="text-xs text-slate-400">{fmtTime(it.begin_tijd)}–{fmtTime(it.eind_tijd)}</span>
+                          <span className="text-xs text-slate-500">{fmtTime(it.begin_tijd)}–{fmtTime(it.eind_tijd)}</span>
                         )}
                         <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-700">
                           {Math.floor(it.minutes / 60)}u {it.minutes % 60}m
@@ -162,7 +162,7 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
                       <p className="mt-1.5 text-sm text-slate-800">{it.activity}</p>
                       {it.next_step && <p className="mt-1 text-xs text-slate-500">Volgende stap: {it.next_step}</p>}
                     </div>
-                    <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
+                    <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100">
                       <button onClick={() => startEdit(it)} className="text-slate-300 hover:text-slate-600" aria-label="Bewerken">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>

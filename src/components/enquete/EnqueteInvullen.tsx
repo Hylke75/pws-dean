@@ -22,12 +22,14 @@ export default function EnqueteInvullen({ token }: { token: string }) {
   const supabase = createClient();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem(`pws_enq_${token}`)) {
-      setState("verstuurd");
-      return;
-    }
+    let cancelled = false;
     (async () => {
+      if (typeof window !== "undefined" && localStorage.getItem(`pws_enq_${token}`)) {
+        if (!cancelled) setState("verstuurd");
+        return;
+      }
       const { data } = await supabase.rpc("pws_enquete_public", { p_token: token });
+      if (cancelled) return;
       if (data) {
         setSurvey(data as PublicSurvey);
         setState("klaar");
@@ -35,6 +37,9 @@ export default function EnqueteInvullen({ token }: { token: string }) {
         setState("dicht");
       }
     })();
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
@@ -67,7 +72,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-xl">
-        {state === "laden" && <p className="text-center text-slate-400">Laden…</p>}
+        {state === "laden" && <p className="text-center text-slate-500">Laden…</p>}
 
         {state === "dicht" && (
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
@@ -128,14 +133,14 @@ export default function EnqueteInvullen({ token }: { token: string }) {
                   )}
                   {q.type === "schaal" && (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-400">oneens</span>
+                      <span className="text-xs text-slate-500">oneens</span>
                       {["1", "2", "3", "4", "5"].map((n) => (
                         <label key={n} className="flex flex-col items-center text-xs text-slate-600">
                           <input type="radio" name={q.id} checked={values[q.id] === n} onChange={() => set(q.id, n)} />
                           {n}
                         </label>
                       ))}
-                      <span className="text-xs text-slate-400">eens</span>
+                      <span className="text-xs text-slate-500">eens</span>
                     </div>
                   )}
                 </div>
@@ -146,7 +151,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 font-semibold text-white hover:bg-emerald-700 disabled:opacity-60">
               {busy ? "Versturen…" : "Versturen"}
             </button>
-            <p className="text-center text-xs text-slate-400">Je antwoorden worden anoniem opgeslagen.</p>
+            <p className="text-center text-xs text-slate-500">Je antwoorden worden anoniem opgeslagen.</p>
           </form>
         )}
       </div>
