@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useUnsavedWarning } from "@/lib/useUnsavedWarning";
 import type { Veld } from "@/lib/faseVelden";
 
 export default function FaseVelden({
@@ -15,21 +16,27 @@ export default function FaseVelden({
 }) {
   const [data, setData] = useState<Record<string, string>>(initial);
   const [saved, setSaved] = useState<"idle" | "saving" | "done" | "error">("idle");
+  const [dirty, setDirty] = useState(false);
   const supabase = createClient();
 
+  useUnsavedWarning(dirty);
+
   function change(key: string, value: string) {
+    setDirty(true);
     setData((d) => ({ ...d, [key]: value }));
   }
 
   async function save() {
+    if (!dirty) return;
     setSaved("saving");
     const { error } = await supabase.from("pws_phases").update({ veld_data: data }).eq("id", phaseId);
     if (error) {
       setSaved("error");
       return;
     }
+    setDirty(false);
     setSaved("done");
-    setTimeout(() => setSaved("idle"), 1500);
+    setTimeout(() => setSaved("idle"), 2500);
   }
 
   return (
@@ -63,7 +70,7 @@ export default function FaseVelden({
           )}
         </div>
       ))}
-      <div className={`h-4 text-xs ${saved === "error" ? "text-red-600" : "text-slate-500"}`}>
+      <div aria-live="polite" className={`h-4 text-xs ${saved === "error" ? "text-red-600" : "text-slate-500"}`}>
         {saved === "saving"
           ? "Opslaan…"
           : saved === "done"

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import type { FaseHulp as Hulp } from "@/lib/faseVelden";
 
-export default function FaseHulp({ hulp }: { hulp: Hulp }) {
-  const [open, setOpen] = useState(false);
+export default function FaseHulp({ hulp, defaultOpen = false }: { hulp: Hulp; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50">

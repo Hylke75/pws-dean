@@ -41,7 +41,7 @@ export function daysUntil(d: string | null): number | null {
 export function humanUntil(d: string | null): string {
   const n = daysUntil(d);
   if (n === null) return "";
-  if (n < 0) return `${Math.abs(n)} dagen geleden`;
+  if (n < 0) return `${Math.abs(n)} ${Math.abs(n) === 1 ? "dag" : "dagen"} geleden`;
   if (n === 0) return "vandaag";
   if (n === 1) return "morgen";
   return `over ${n} dagen`;

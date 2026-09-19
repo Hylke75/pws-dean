@@ -51,6 +51,7 @@ export default function InterviewDetail({
     await supabase.from("pws_interview_items").update(patch).eq("id", id);
   }
   async function removeItem(id: string) {
+    if (!confirm("Deze vraag verwijderen?")) return;
     setItems((it) => it.filter((x) => x.id !== id));
     await supabase.from("pws_interview_items").delete().eq("id", id);
   }
@@ -105,7 +106,7 @@ export default function InterviewDetail({
                   className="w-full resize-y rounded-lg border border-slate-200 p-2.5 text-sm outline-none focus:border-emerald-500"
                 />
               </div>
-              <button onClick={() => removeItem(it.id)} className="mt-1 text-slate-300 hover:text-red-500" aria-label="Verwijderen">✕</button>
+              <button onClick={() => removeItem(it.id)} className="mt-0.5 shrink-0 rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500" aria-label="Verwijderen">✕</button>
             </div>
           </div>
         ))}

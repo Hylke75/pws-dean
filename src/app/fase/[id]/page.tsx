@@ -109,7 +109,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
 
       {hulp && (
         <div className="mt-4">
-          <FaseHulp hulp={hulp} />
+          <FaseHulp hulp={hulp} defaultOpen={p.order_index <= 5} />
         </div>
       )}
 
@@ -145,7 +145,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
         </Section>
       )}
 
-      <Section title="Zelfcheck" hint="Controleer je uitwerking direct aan de eisen van deze fase.">
+      <Section title="Check met AI" hint="Laat je uitwerking direct nakijken aan de eisen van deze fase.">
         <ToetsPaneel
           phaseId={p.id}
           initial={laatsteFeedback?.data ?? null}
@@ -153,7 +153,7 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
         />
       </Section>
 
-      <Section title="Zelf-toets" hint="Vink af wat je hebt gedaan — zo zie je of de fase compleet is.">
+      <Section title="Eisen afvinken" hint="Vink zelf af wat je hebt gedaan — zo zie je of de fase compleet is.">
         <CriteriaChecklist initial={(criteria as ToetsCriterium[]) ?? []} />
       </Section>
 

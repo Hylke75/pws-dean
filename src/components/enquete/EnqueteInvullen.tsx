@@ -147,7 +147,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
               </div>
             ))}
 
-            {err && <p className="text-sm text-red-600">{err}</p>}
+            {err && <p role="alert" className="text-sm text-red-600">{err}</p>}
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 font-semibold text-white hover:bg-emerald-700 disabled:opacity-60">
               {busy ? "Versturen…" : "Versturen"}
             </button>

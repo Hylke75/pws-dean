@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState<"idle" | "bezig" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "bezig" | "error" | "reset_verzonden">("idle");
   const [msg, setMsg] = useState("");
   const router = useRouter();
 
@@ -27,6 +27,23 @@ export default function LoginPage() {
       router.push("/");
       router.refresh();
     }
+  }
+
+  async function wachtwoordVergeten() {
+    if (!email.trim()) {
+      setStatus("error");
+      setMsg("Vul eerst je e-mailadres in, dan sturen we een resetlink.");
+      return;
+    }
+    setStatus("bezig");
+    setMsg("");
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback?next=/wachtwoord`,
+    });
+    // Bewust altijd dezelfde melding (geen info of het adres bestaat).
+    setStatus("reset_verzonden");
+    setMsg("Als dit e-mailadres bekend is, sturen we je een link om een nieuw wachtwoord in te stellen.");
   }
 
   return (
@@ -72,7 +89,16 @@ export default function LoginPage() {
           >
             {status === "bezig" ? "Inloggen…" : "Inloggen"}
           </button>
-          {status === "error" && <p className="text-sm text-red-600">{msg}</p>}
+          {status === "error" && <p role="alert" className="text-sm text-red-600">{msg}</p>}
+          {status === "reset_verzonden" && <p role="status" className="text-sm text-emerald-700">{msg}</p>}
+          <button
+            type="button"
+            onClick={wachtwoordVergeten}
+            disabled={status === "bezig"}
+            className="block w-full text-center text-xs font-medium text-slate-500 hover:text-emerald-700 disabled:opacity-60"
+          >
+            Wachtwoord vergeten?
+          </button>
         </form>
       </div>
     </main>

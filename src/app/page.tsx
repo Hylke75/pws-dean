@@ -180,17 +180,17 @@ export default async function Dashboard() {
                   <p className="truncate font-medium text-slate-900">{p.title}</p>
                   <p className="text-xs text-slate-500">{fmtRange(p.start_date, p.deadline)}</p>
                 </div>
-                {isHuidig && <span className="hidden rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white sm:inline">nu</span>}
-                {overdue && <span className="hidden text-xs font-semibold text-red-600 sm:block">te laat</span>}
-                {soon && !overdue && !isHuidig && <span className="hidden text-xs font-semibold text-amber-600 sm:block">{humanUntil(p.deadline)}</span>}
+                {isHuidig && <span className="shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white">nu</span>}
+                {overdue && <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-red-600">te laat</span>}
+                {soon && !overdue && !isHuidig && <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-amber-600">{humanUntil(p.deadline)}</span>}
                 {p.review_status === "ingediend" && (
-                  <span className="hidden rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700 sm:inline">ingediend</span>
+                  <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700">ingediend</span>
                 )}
                 {p.review_status === "goedgekeurd" && (
-                  <span className="hidden rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 sm:inline">✓ akkoord</span>
+                  <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">✓ akkoord</span>
                 )}
                 {p.review_status === "wijzigingen_nodig" && (
-                  <span className="hidden rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 sm:inline">wijzigen</span>
+                  <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">wijzigen</span>
                 )}
                 <StatusPill status={p.status} />
               </Link>

@@ -58,6 +58,7 @@ export default function BronnenClient({ initial, phases }: { initial: Source[]; 
   }
 
   async function remove(id: string) {
+    if (!confirm("Deze bron verwijderen?")) return;
     setItems((prev) => prev.filter((i) => i.id !== id));
     await supabase.from("pws_sources").delete().eq("id", id);
   }
@@ -106,7 +107,7 @@ export default function BronnenClient({ initial, phases }: { initial: Source[]; 
                   </div>
                   <button
                     onClick={() => remove(s.id)}
-                    className="opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 text-slate-300 hover:text-red-500"
+                    className="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                     aria-label="Verwijderen"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

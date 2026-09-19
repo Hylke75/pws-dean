@@ -150,7 +150,7 @@ export default function IndienenReview({
         </div>
       )}
 
-      {msg && <p className="text-sm text-slate-500">{msg}</p>}
+      {msg && <p aria-live="polite" className="text-sm text-slate-500">{msg}</p>}
     </div>
   );
 }
