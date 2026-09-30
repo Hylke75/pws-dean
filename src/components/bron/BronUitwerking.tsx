@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { deelvraagLabel } from "@/lib/subquestions";
 import type { Source, Subquestion } from "@/lib/types";
+
+// Buiten de component: uniek opslagpad (Date.now mag niet tijdens render).
+function maakBronPad(userId: string, sourceId: string, filename: string): string {
+  const veilig = filename.replace(/[^\w.\-]+/g, "_");
+  return `${userId}/bronnen/${sourceId}/${Date.now()}-${veilig}`;
+}
 
 const CHECKS: { key: string; label: string }[] = [
   { key: "auteur", label: "Auteur of organisatie is bekend en deskundig" },
@@ -39,7 +45,47 @@ export default function BronUitwerking({
   const relevance = source.relevance ?? "";
   const [reliability, setReliability] = useState<Record<string, boolean>>(source.reliability ?? {});
   const [saved, setSaved] = useState<"idle" | "done">("idle");
+  const [docBezig, setDocBezig] = useState(false);
+  const [docFout, setDocFout] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
+
+  async function uploadDocument(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setDocBezig(true);
+    setDocFout(null);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const path = maakBronPad(user?.id ?? "anon", source.id, file.name);
+    const { error } = await supabase.storage.from("pws-files").upload(path, file);
+    if (error) {
+      setDocFout("Uploaden mislukt: " + error.message);
+      setDocBezig(false);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+    // Eventueel oud document opruimen.
+    if (source.document_path) {
+      await supabase.storage.from("pws-files").remove([source.document_path]);
+    }
+    await save({ document_path: path, document_name: file.name });
+    setDocBezig(false);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  async function openDocument() {
+    if (!source.document_path) return;
+    const { data } = await supabase.storage.from("pws-files").createSignedUrl(source.document_path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  }
+
+  async function verwijderDocument() {
+    if (!source.document_path) return;
+    await supabase.storage.from("pws-files").remove([source.document_path]);
+    await save({ document_path: null, document_name: null });
+  }
 
   async function save(patch: Partial<Source>) {
     await supabase.from("pws_sources").update(patch).eq("id", source.id);
@@ -163,6 +209,38 @@ export default function BronUitwerking({
         {relevance && (
           <p className="mt-1 text-xs text-slate-400">Eerdere notitie: {relevance}</p>
         )}
+      </div>
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Document</label>
+        <p className="mt-0.5 text-xs text-slate-500">Upload de bron zelf (pdf, scan, artikel) of een uitwerking erbij.</p>
+        {source.document_path ? (
+          <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+            <span className="text-slate-500">📎</span>
+            <button onClick={openDocument} className="flex-1 truncate text-left text-sm text-slate-700 hover:underline">
+              {source.document_name ?? "Document openen"}
+            </button>
+            <label className="cursor-pointer rounded-lg px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100">
+              {docBezig ? "Bezig…" : "Vervangen"}
+              <input ref={fileRef} type="file" onChange={uploadDocument} disabled={docBezig} className="hidden" />
+            </label>
+            <button
+              onClick={verwijderDocument}
+              disabled={docBezig}
+              className="rounded-lg p-1 text-slate-300 hover:bg-red-50 hover:text-red-500"
+              aria-label="Document verwijderen"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <label className="mt-1.5 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-sm text-slate-500 hover:border-emerald-400 hover:text-emerald-600">
+            {docBezig ? "Uploaden…" : "📁 Document uploaden"}
+            <input ref={fileRef} type="file" onChange={uploadDocument} disabled={docBezig} className="hidden" />
+          </label>
+        )}
+        {docFout && <p className="mt-1 text-xs text-red-600">{docFout}</p>}
       </div>
       <div>
         <div className="flex items-center justify-between">

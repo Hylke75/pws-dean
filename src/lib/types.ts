@@ -105,6 +105,8 @@ export type Source = {
   relevance: string | null;
   phase_id: string | null;
   subquestion_id: string | null;
+  document_path: string | null;
+  document_name: string | null;
   created_at: string;
 };
 
