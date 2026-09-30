@@ -47,6 +47,55 @@ export function aiBeschikbaar(): boolean {
   return !!process.env.ANTHROPIC_API_KEY;
 }
 
+export type BronSamenvattingInput = {
+  soort: string;
+  titel: string;
+  auteurs: string | null;
+  jaar: string | null;
+  uitgever: string | null;
+  url: string | null;
+  paginaTekst: string | null;
+  hoofdvraag: string | null;
+  deelvraag: string | null;
+};
+
+/** Genereert een korte Nederlandse samenvatting van één bron, afgestemd op het PWS. */
+export async function getBronSamenvatting(input: BronSamenvattingInput): Promise<string> {
+  const client = new Anthropic(); // leest ANTHROPIC_API_KEY uit env
+
+  const system = `Je bent een behulpzame PWS-begeleider op een Nederlandse middelbare school (vwo). Je vat één bron kort samen voor een leerling, in helder Nederlands op vwo-niveau. Schrijf 3 tot 5 zinnen. Leg uit waar de bron over gaat en wat er in staat dat nuttig kan zijn voor het profielwerkstuk. Gebruik UITSLUITEND informatie uit de aangeleverde brontekst en brongegevens — verzin niets en haal geen feiten van buiten de tekst. Als er te weinig inhoud is aangeleverd, zeg dat kort en eerlijk (bijv. "Op basis van alleen de titel lijkt deze bron te gaan over …; lees de bron zelf voor de details.") in plaats van te gokken. Antwoord met platte tekst, zonder kopjes, opsommingstekens of aanhalingstekens rondom het geheel.`;
+
+  const context: string[] = [
+    `Soort bron: ${input.soort}`,
+    `Titel: ${input.titel}`,
+  ];
+  if (input.auteurs) context.push(`Auteur(s): ${input.auteurs}`);
+  if (input.jaar) context.push(`Jaar: ${input.jaar}`);
+  if (input.uitgever) context.push(`Uitgever/site: ${input.uitgever}`);
+  if (input.url) context.push(`URL: ${input.url}`);
+  if (input.hoofdvraag) context.push(`Hoofdvraag van het PWS: ${input.hoofdvraag}`);
+  if (input.deelvraag) context.push(`Deze bron hoort bij deelvraag: ${input.deelvraag}`);
+
+  const brontekst = input.paginaTekst?.trim()
+    ? `\n\n--- Tekst van de bron (kan ingekort zijn) ---\n${input.paginaTekst.trim().slice(0, 12000)}`
+    : "\n\n(Geen brontekst beschikbaar — baseer je alleen op de gegevens hierboven en wees voorzichtig.)";
+
+  const user = `Vat de volgende bron samen voor mijn profielwerkstuk.${input.deelvraag ? " Leg waar mogelijk uit hoe de bron bij de genoemde deelvraag past." : ""}\n\n${context.join("\n")}${brontekst}`;
+
+  const response = await client.messages.create({
+    model: "claude-opus-4-8",
+    max_tokens: 600,
+    system,
+    messages: [{ role: "user", content: user }],
+  } as Anthropic.MessageCreateParamsNonStreaming);
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new Error("Geen tekst in AI-antwoord");
+  }
+  return textBlock.text.trim();
+}
+
 export async function getPhaseFeedback(input: FeedbackInput): Promise<AiFeedbackData> {
   const client = new Anthropic(); // leest ANTHROPIC_API_KEY uit env
 

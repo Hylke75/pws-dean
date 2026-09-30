@@ -15,7 +15,7 @@ export default async function LogboekPage() {
     <main className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="text-2xl font-bold text-slate-900">Logboek</h1>
       <p className="mt-1 text-slate-500">
-        Houd bij waar je aan werkt. De school wil minimaal 80 uur aantoonbaar — bijhouden tijdens
+        Houd bij waar je aan werkt. De school wil minimaal 40 uur aantoonbaar — bijhouden tijdens
         het PWS, niet achteraf.
       </p>
       <div className="mt-6">

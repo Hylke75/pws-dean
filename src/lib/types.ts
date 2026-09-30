@@ -104,6 +104,14 @@ export type Source = {
   reliability: Record<string, boolean> | null;
   relevance: string | null;
   phase_id: string | null;
+  subquestion_id: string | null;
+  created_at: string;
+};
+
+export type Subquestion = {
+  id: string;
+  text: string;
+  order_index: number;
   created_at: string;
 };
 

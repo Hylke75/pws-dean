@@ -1,14 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import BronnenClient from "@/components/BronnenClient";
-import type { Source, Phase } from "@/lib/types";
+import type { Source, Phase, Subquestion } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function BronnenPage() {
   const supabase = await createClient();
-  const [{ data: sources }, { data: phases }] = await Promise.all([
+  const [{ data: sources }, { data: phases }, { data: subvragen }] = await Promise.all([
     supabase.from("pws_sources").select("*").order("created_at"),
     supabase.from("pws_phases").select("*").order("order_index"),
+    supabase.from("pws_subquestions").select("*").order("order_index"),
   ]);
 
   return (
@@ -18,7 +19,11 @@ export default async function BronnenPage() {
         Verzamel al je bronnen meteen — dan is je bronvermelding straks zo klaar.
       </p>
       <div className="mt-6">
-        <BronnenClient initial={(sources as Source[]) ?? []} phases={(phases as Phase[]) ?? []} />
+        <BronnenClient
+          initial={(sources as Source[]) ?? []}
+          phases={(phases as Phase[]) ?? []}
+          deelvragen={(subvragen as Subquestion[]) ?? []}
+        />
       </div>
     </main>
   );

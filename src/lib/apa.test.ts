@@ -18,6 +18,7 @@ function bron(overrides: Partial<Source>): Source {
     reliability: null,
     relevance: null,
     phase_id: null,
+    subquestion_id: null,
     created_at: "2026-01-01",
     ...overrides,
   };

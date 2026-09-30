@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { fmtDate } from "@/lib/dates";
+import { LOGBOEK_DOEL_UREN } from "@/lib/constants";
 import type { LogEntry, Phase } from "@/lib/types";
 
 function todayIso() {
@@ -116,13 +117,13 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
         <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex items-baseline justify-between">
             <p className="text-sm text-slate-500">Totaal gelogd</p>
-            <p className="text-sm font-medium text-slate-500">{totalHours.toFixed(1)} / 80 uur</p>
+            <p className="text-sm font-medium text-slate-500">{totalHours.toFixed(1)} / {LOGBOEK_DOEL_UREN} uur</p>
           </div>
           <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-sky-500" style={{ width: `${Math.min(100, (totalHours / 80) * 100)}%` }} />
+            <div className="h-full rounded-full bg-sky-500" style={{ width: `${Math.min(100, (totalHours / LOGBOEK_DOEL_UREN) * 100)}%` }} />
           </div>
           <p className="mt-1.5 text-xs text-slate-500">
-            {totalHours >= 80 ? "Je hebt de 80-uur eis gehaald 🎉" : `Nog ${(80 - totalHours).toFixed(1)} uur te gaan.`}
+            {totalHours >= LOGBOEK_DOEL_UREN ? `Je hebt de ${LOGBOEK_DOEL_UREN}-uur eis gehaald 🎉` : `Nog ${(LOGBOEK_DOEL_UREN - totalHours).toFixed(1)} uur te gaan.`}
           </p>
         </div>
 

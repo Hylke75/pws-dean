@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Source } from "@/lib/types";
+import { deelvraagLabel } from "@/lib/subquestions";
+import type { Source, Subquestion } from "@/lib/types";
 
 const CHECKS: { key: string; label: string }[] = [
   { key: "auteur", label: "Auteur of organisatie is bekend en deskundig" },
@@ -15,9 +16,11 @@ const SOORTEN: Source["source_type"][] = ["website", "boek", "artikel", "video",
 
 export default function BronUitwerking({
   source,
+  deelvragen,
   onUpdate,
 }: {
   source: Source;
+  deelvragen: Subquestion[];
   onUpdate: (patch: Partial<Source>) => void;
 }) {
   const [basis, setBasis] = useState({
@@ -30,8 +33,10 @@ export default function BronUitwerking({
     accessed_on: source.accessed_on ?? "",
   });
   const [summary, setSummary] = useState(source.summary ?? "");
+  const [aiBezig, setAiBezig] = useState(false);
+  const [aiMelding, setAiMelding] = useState<string | null>(null);
   const [quotes, setQuotes] = useState(source.quotes ?? "");
-  const [relevance, setRelevance] = useState(source.relevance ?? "");
+  const relevance = source.relevance ?? "";
   const [reliability, setReliability] = useState<Record<string, boolean>>(source.reliability ?? {});
   const [saved, setSaved] = useState<"idle" | "done">("idle");
   const supabase = createClient();
@@ -55,6 +60,30 @@ export default function BronUitwerking({
     });
   }
   const setB = (k: keyof typeof basis) => (v: string) => setBasis((b) => ({ ...b, [k]: v }));
+
+  async function samenvatMetAi() {
+    setAiBezig(true);
+    setAiMelding(null);
+    try {
+      const res = await fetch(`/api/bron/${source.id}/samenvatting`, { method: "POST" });
+      const json = await res.json();
+      if (json.ok) {
+        setSummary(json.summary);
+        onUpdate({ summary: json.summary });
+        if (!json.hadContent) {
+          setAiMelding("De pagina kon niet worden opgehaald — samenvatting is op basis van de titel. Controleer en vul zelf aan.");
+        }
+      } else if (json.reason === "no_key") {
+        setAiMelding("AI-samenvatten staat nog niet aan (geen API-sleutel ingesteld).");
+      } else {
+        setAiMelding("Samenvatten met AI is even niet gelukt. Probeer het zo nog eens.");
+      }
+    } catch {
+      setAiMelding("Samenvatten met AI is even niet gelukt. Controleer je verbinding.");
+    } finally {
+      setAiBezig(false);
+    }
+  }
 
   function toggleCheck(key: string) {
     const next = { ...reliability, [key]: !reliability[key] };
@@ -81,15 +110,26 @@ export default function BronUitwerking({
         </div>
       </div>
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Samenvatting</label>
+        <div className="flex items-center justify-between gap-2">
+          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Samenvatting</label>
+          <button
+            type="button"
+            onClick={samenvatMetAi}
+            disabled={aiBezig}
+            className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 disabled:opacity-60"
+          >
+            {aiBezig ? "Bezig met samenvatten…" : "✨ Samenvatten met AI"}
+          </button>
+        </div>
         <textarea
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
           onBlur={() => save({ summary: summary || null })}
           rows={3}
-          placeholder="Wat staat er in deze bron, in je eigen woorden?"
+          placeholder="Wat staat er in deze bron? Laat AI een opzet maken of schrijf het in je eigen woorden."
           className="mt-1 w-full resize-y rounded-lg border border-slate-200 p-2.5 text-sm outline-none focus:border-emerald-500"
         />
+        {aiMelding && <p className="mt-1 text-xs text-amber-600">{aiMelding}</p>}
       </div>
       <div>
         <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Belangrijke citaten</label>
@@ -104,13 +144,25 @@ export default function BronUitwerking({
       </div>
       <div>
         <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Hoort bij welke deelvraag?</label>
-        <input
-          value={relevance}
-          onChange={(e) => setRelevance(e.target.value)}
-          onBlur={() => save({ relevance: relevance || null })}
-          placeholder="Bijv. deelvraag 2 over blauw licht en slaap"
-          className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500"
-        />
+        {deelvragen.length === 0 ? (
+          <p className="mt-1 rounded-lg border border-dashed border-slate-200 px-3 py-2 text-xs text-slate-500">
+            Nog geen deelvragen. Zet ze eerst bij fase 2 (Onderzoeksvraag).
+          </p>
+        ) : (
+          <select
+            value={source.subquestion_id ?? ""}
+            onChange={(e) => save({ subquestion_id: e.target.value || null })}
+            className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+          >
+            <option value="">— Geen deelvraag —</option>
+            {deelvragen.map((d, i) => (
+              <option key={d.id} value={d.id}>{deelvraagLabel(d, i)}</option>
+            ))}
+          </select>
+        )}
+        {relevance && (
+          <p className="mt-1 text-xs text-slate-400">Eerdere notitie: {relevance}</p>
+        )}
       </div>
       <div>
         <div className="flex items-center justify-between">

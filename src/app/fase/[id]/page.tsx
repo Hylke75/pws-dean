@@ -6,6 +6,7 @@ import { fmtRange, fmtDate, humanUntil, isPast } from "@/lib/dates";
 import StatusSelect from "@/components/phase/StatusSelect";
 import Notes from "@/components/phase/Notes";
 import FaseVelden from "@/components/phase/FaseVelden";
+import DeelvragenEditor from "@/components/phase/DeelvragenEditor";
 import FaseHulp from "@/components/phase/FaseHulp";
 import { veldenVoorFase, hulpVoorFase } from "@/lib/faseVelden";
 import Checklist from "@/components/phase/Checklist";
@@ -23,6 +24,7 @@ import type {
   ToetsCriterium,
   AiFeedback,
   Review,
+  Subquestion,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +70,13 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
   const gekoppeldeEnquetes = (surveys as { id: string; title: string; status: string }[]) ?? [];
 
   const laatsteFeedback = aiFeedback as AiFeedback | null;
+
+  // Deelvragen zijn gedeeld voor het hele PWS en worden bij fase 2 beheerd.
+  const isDeelvragenFase = p.order_index === 2;
+  const { data: subvragen } = isDeelvragenFase
+    ? await supabase.from("pws_subquestions").select("*").order("order_index")
+    : { data: null };
+  const deelvragen = (subvragen as Subquestion[] | null) ?? [];
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
@@ -116,6 +125,16 @@ export default async function PhasePage({ params }: PageProps<"/fase/[id]">) {
       {velden.length > 0 && (
         <Section title="Jouw uitwerking" hint="Vul hier het echte werk voor deze fase in.">
           <FaseVelden phaseId={p.id} velden={velden} initial={p.veld_data ?? {}} />
+          {isDeelvragenFase && (
+            <div className="mt-5 border-t border-slate-100 pt-4">
+              <p className="text-sm font-medium text-slate-700">Deelvragen</p>
+              <p className="mb-2 mt-0.5 text-xs text-slate-500">
+                Zet elke deelvraag als apart veld. 3–5 deelvragen die samen de hoofdvraag beantwoorden.
+                Op de Bronnen-pagina kun je elke bron aan één van deze deelvragen koppelen.
+              </p>
+              <DeelvragenEditor initial={deelvragen} />
+            </div>
+          )}
         </Section>
       )}
 

@@ -5,6 +5,7 @@ import StatusPill from "@/components/StatusPill";
 import WelkomKaart from "@/components/WelkomKaart";
 import { fmtRange, fmtDate, daysUntil, humanUntil, isPast, parseDate } from "@/lib/dates";
 import { hulpVoorFase } from "@/lib/faseVelden";
+import { LOGBOEK_DOEL_UREN } from "@/lib/constants";
 import type { Phase } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ function verwachteUren(startISO: string | null, eindISO: string | null): number 
   const totaal = (eind.getTime() - start.getTime()) / 86400000;
   if (totaal <= 0) return null;
   const verstreken = Math.max(0, Math.min(totaal, (Date.now() - start.getTime()) / 86400000));
-  return Math.round((80 * verstreken) / totaal);
+  return Math.round((LOGBOEK_DOEL_UREN * verstreken) / totaal);
 }
 
 export default async function Dashboard() {
@@ -57,7 +58,7 @@ export default async function Dashboard() {
   const huidigeHulp = huidige ? hulpVoorFase(huidige.order_index) : null;
   const eersteStap = huidigeHulp?.aanpak?.[0];
 
-  // Uren-tempo: verwacht t.o.v. de looptijd (richtlijn 80 u).
+  // Uren-tempo: verwacht t.o.v. de looptijd (richtlijn 40 u).
   const verwachtUur = verwachteUren(phases[0]?.start_date ?? null, phases[phases.length - 1]?.deadline ?? null);
 
   const firstName = profile?.full_name?.split(" ")[0] ?? "daar";
@@ -127,10 +128,10 @@ export default async function Dashboard() {
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-500">Logboek</p>
           <p className="mt-1 text-3xl font-bold text-slate-900">
-            {totalHours.toFixed(1)}<span className="text-lg text-slate-500"> / 80 u</span>
+            {totalHours.toFixed(1)}<span className="text-lg text-slate-500"> / {LOGBOEK_DOEL_UREN} u</span>
           </p>
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-sky-500" style={{ width: `${Math.min(100, (totalHours / 80) * 100)}%` }} />
+            <div className="h-full rounded-full bg-sky-500" style={{ width: `${Math.min(100, (totalHours / LOGBOEK_DOEL_UREN) * 100)}%` }} />
           </div>
           {verwachtUur != null && done < phases.length ? (
             <p className={`mt-2 text-xs ${totalHours + 2 < verwachtUur ? "text-amber-600" : "text-slate-500"}`}>
