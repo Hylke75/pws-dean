@@ -15,7 +15,7 @@ export default async function EnqueteDetail({ params }: PageProps<"/enquetes/[id
   if (!survey) notFound();
 
   const [{ data: questions }, { data: reacties }, { data: phases }] = await Promise.all([
-    supabase.from("pws_survey_questions").select("*").eq("survey_id", id).order("order_index"),
+    supabase.from("pws_survey_questions").select("*").eq("survey_id", id).eq("actief", true).order("order_index"),
     supabase.rpc("pws_enquete_resultaten", { p_survey_id: id }),
     supabase.from("pws_phases").select("id, order_index, title").order("order_index"),
   ]);

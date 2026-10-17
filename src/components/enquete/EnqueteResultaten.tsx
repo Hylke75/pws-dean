@@ -1,36 +1,51 @@
 "use client";
 
+import { useState } from "react";
 import {
+  alleOpties,
+  filterReacties,
+  naarLangeCsv,
+  waardeVan,
   andersTeksten,
   labelsVoor,
   naarCsv,
   openAntwoorden,
   schaalVerdeling,
   telKeuzes,
+  vraagNummers,
   type Reactie,
   type Vraag,
 } from "@/lib/enquete";
 import { SchaalLegenda, Staven, VerdelingRij } from "./Grafieken";
 
 export default function EnqueteResultaten({
+  surveyId,
   titel,
   vragen,
-  reacties,
+  reacties: alleReacties,
 }: {
+  surveyId: string;
   titel: string;
   vragen: Vraag[];
   reacties: Reactie[];
 }) {
+  // Filter op doelgroep: alleen invullers met een bepaald antwoord op een keuzevraag.
+  const filterVragen = vragen.filter((v) => v.type === "meerkeuze");
+  const [filterQ, setFilterQ] = useState("");
+  const [filterW, setFilterW] = useState("");
+  const filterVraag = filterVragen.find((v) => v.id === filterQ);
+  const reacties = filterVraag && filterW ? filterReacties(alleReacties, filterVraag.id, filterW) : alleReacties;
   const totaal = reacties.length;
+  const nummers = vraagNummers(vragen);
   const laatste = totaal ? new Date(reacties[totaal - 1].created_at) : null;
   const vandaag = reacties.filter((r) => new Date(r.created_at).toDateString() === new Date().toDateString()).length;
 
-  function downloadCsv() {
-    const blob = new Blob(["﻿" + naarCsv(vragen, reacties)], { type: "text/csv;charset=utf-8" });
+  function download(inhoud: string, naam: string) {
+    const blob = new Blob(["﻿" + inhoud], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `enquete-${titel.replace(/[^\w]+/g, "_")}.csv`;
+    a.download = `enquete-${titel.replace(/[^\w]+/g, "_")}${naam}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -46,10 +61,43 @@ export default function EnqueteResultaten({
         />
       </div>
 
+      {filterVragen.length > 0 && alleReacties.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 text-sm">
+          <label htmlFor="filter-vraag" className="text-slate-600">Doelgroep:</label>
+          <select
+            id="filter-vraag"
+            value={filterQ}
+            onChange={(e) => { setFilterQ(e.target.value); setFilterW(""); }}
+            className="min-w-0 max-w-full flex-1 rounded-lg border border-slate-200 px-2 py-1.5 outline-none focus:border-emerald-500"
+          >
+            <option value="">Alle invullers</option>
+            {filterVragen.map((v) => (
+              <option key={v.id} value={v.id}>{nummers[vragen.indexOf(v)]}. {v.text}</option>
+            ))}
+          </select>
+          {filterVraag && (
+            <select
+              aria-label="Antwoord"
+              value={filterW}
+              onChange={(e) => setFilterW(e.target.value)}
+              className="min-w-0 max-w-full rounded-lg border border-slate-200 px-2 py-1.5 outline-none focus:border-emerald-500"
+            >
+              <option value="">Kies een antwoord…</option>
+              {alleOpties(filterVraag).map((o) => (
+                <option key={o} value={waardeVan(filterVraag, o)}>{o}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
       {totaal > 0 && (
-        <div className="flex justify-end">
-          <button onClick={downloadCsv} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
-            Download alle antwoorden (CSV, voor Excel)
+        <div className="flex flex-wrap justify-end gap-2">
+          <button onClick={() => download(naarCsv(vragen, reacties, surveyId), "")} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+            Download CSV (één rij per invuller)
+          </button>
+          <button onClick={() => download(naarLangeCsv(vragen, reacties, surveyId), "-lang")} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+            Download CSV (één rij per antwoord)
           </button>
         </div>
       )}
@@ -67,7 +115,7 @@ export default function EnqueteResultaten({
               <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">{v.section}</p>
             )}
             <h3 className="text-sm font-semibold text-slate-900">
-              {i + 1}. {v.text || "(geen vraagtekst)"}
+              {nummers[i]}. {v.text || "(geen vraagtekst)"}
             </h3>
             <div className="mt-3">
               <VraagResultaat vraag={v} reacties={reacties} />

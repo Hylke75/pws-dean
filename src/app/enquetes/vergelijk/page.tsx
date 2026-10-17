@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import {
-  alleOpties,
   labelsVoor,
   openAntwoorden,
   pct,
@@ -49,6 +48,7 @@ export default async function VergelijkPage() {
     .from("pws_surveys")
     .select("*")
     .not("slug", "is", null)
+    .eq("verborgen", false)
     .order("created_at");
 
   const volgorde = ["leerlingen", "docenten", "werknemers"];
@@ -58,7 +58,7 @@ export default async function VergelijkPage() {
   const groepen: Groep[] = await Promise.all(
     gekozen.map(async (s, i) => {
       const [{ data: vragen }, { data: reacties }] = await Promise.all([
-        supabase.from("pws_survey_questions").select("*").eq("survey_id", s.id).order("order_index"),
+        supabase.from("pws_survey_questions").select("*").eq("survey_id", s.id).eq("actief", true).order("order_index"),
         supabase.rpc("pws_enquete_resultaten", { p_survey_id: s.id }),
       ]);
       const r = (reacties as Reactie[]) ?? [];
@@ -183,18 +183,18 @@ function Vergelijking({ per }: { per: { g: Groep; v: Vraag }[] }) {
     );
   }
 
-  // Keuzevragen: per optie een staaf per groep.
+  // Keuzevragen: per antwoordcode een staaf per groep; het label komt van de eerste groep die de optie heeft.
   const tellingen = per.map(({ g, v }) => ({ g, ...telKeuzes(v, g.reacties) }));
-  const opties: string[] = [];
-  for (const { v } of per) for (const o of alleOpties(v)) if (!opties.includes(o)) opties.push(o);
+  const opties = new Map<string, string>();
+  for (const t of tellingen) for (const x of t.tellingen) if (!opties.has(x.code)) opties.set(x.code, x.waarde);
   return (
     <div className="space-y-3">
-      {opties.map((o) => (
-        <div key={o}>
-          <p className="text-sm text-slate-700">{o}</p>
+      {[...opties.entries()].map(([code, label]) => (
+        <div key={code}>
+          <p className="text-sm text-slate-700">{label}</p>
           <div className="mt-1 space-y-[2px]">
             {tellingen.map(({ g, tellingen: t, beantwoord }) => {
-              const n = t.find((x) => x.waarde === o)?.n ?? 0;
+              const n = t.find((x) => x.code === code)?.n ?? 0;
               const p = pct(n, beantwoord);
               return (
                 <div key={g.naam} className="flex items-center gap-2" title={`${g.naam}: ${n} van ${beantwoord} (${p}%)`}>

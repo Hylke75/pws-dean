@@ -120,6 +120,8 @@ export type Subquestion = {
 export type SurveyStatus = "concept" | "open" | "gesloten";
 export type QuestionType = "open" | "meerkeuze" | "meerdere" | "schaal" | "stellingen" | "janee";
 
+export type Voorwaarde = { vraag: string; waarden: string[] };
+
 export type QuestionConfig = {
   /** meerdere: maximaal aantal keuzes */
   max?: number;
@@ -140,10 +142,20 @@ export type QuestionConfig = {
   /** meerkeuze: opties hangen af van het antwoord op een eerdere vraag */
   afhankelijkVan?: string;
   groepen?: { als: string[]; opties: string[] }[];
+  /** meerkeuze/meerdere: vaste antwoordcodes, parallel aan options. Opgeslagen wordt de code, getoond het label. */
+  codes?: string[];
+  /** korte uitleg onder de vraag */
+  toelichting?: string;
   /** meerdere/meerkeuze: bij "Anders" mag de invuller zelf iets typen */
   andersTekst?: boolean;
-  /** vraag alleen tonen bij bepaalde antwoorden op een eerdere vraag */
-  toonAls?: { vraag: string; waarden: string[] };
+  /** opgeslagen waarde van de "Anders"-optie (standaard "Anders") */
+  andersWaarde?: string;
+  /** vervolgvraag: krijgt geen eigen vraagnummer */
+  vervolg?: boolean;
+  /** vraag alleen tonen bij bepaalde antwoorden op een eerdere vraag; bij een lijst volstaat één voorwaarde */
+  toonAls?: Voorwaarde | Voorwaarde[];
+  /** extra toelichting die alleen bij een bepaalde route verschijnt */
+  extraToelichting?: { als: Voorwaarde | Voorwaarde[]; tekst: string };
   /** sleutel om dezelfde vraag over enquêtes heen te vergelijken */
   vergelijk?: string;
 };
@@ -156,6 +168,7 @@ export type Survey = {
   share_token: string;
   slug: string | null;
   afsluiting: string | null;
+  verborgen: boolean;
   phase_id: string | null;
   created_at: string;
 };
@@ -170,6 +183,8 @@ export type SurveyQuestion = {
   order_index: number;
   section: string | null;
   config: QuestionConfig;
+  actief: boolean;
+  versie: number;
 };
 
 export type Interview = {

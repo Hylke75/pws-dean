@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { STANDAARD_LABELS, labelsVoor, type Reactie } from "@/lib/enquete";
+import { STANDAARD_LABELS, labelVan, labelsVoor, vraagNummers, type Reactie } from "@/lib/enquete";
 import type { Survey, SurveyQuestion, QuestionConfig, QuestionType, SurveyStatus } from "@/lib/types";
 import EnqueteResultaten from "./EnqueteResultaten";
 
@@ -52,6 +52,7 @@ export default function EnqueteBouwer({
   const [slugFout, setSlugFout] = useState("");
   const [questions, setQuestions] = useState<SurveyQuestion[]>(initialQuestions);
   const [copied, setCopied] = useState(false);
+  const nummers = vraagNummers(questions);
 
   async function saveSurvey(patch: Partial<Survey>) {
     return supabase.from("pws_surveys").update(patch).eq("id", survey.id);
@@ -95,10 +96,11 @@ export default function EnqueteBouwer({
     patchLocal(q.id, { config });
     saveQuestion(q.id, { config });
   }
+  // Vragen worden niet echt verwijderd maar inactief gemaakt, zodat gegeven antwoorden bewaard blijven.
   async function removeQuestion(id: string) {
-    if (!confirm("Deze vraag verwijderen? Antwoorden op deze vraag worden ook verwijderd.")) return;
+    if (!confirm("Deze vraag uit de vragenlijst halen? Eerder gegeven antwoorden blijven bewaard.")) return;
     setQuestions((qs) => qs.filter((q) => q.id !== id));
-    await supabase.from("pws_survey_questions").delete().eq("id", id);
+    await supabase.from("pws_survey_questions").update({ actief: false }).eq("id", id);
   }
   async function move(id: string, dir: -1 | 1) {
     const idx = questions.findIndex((q) => q.id === id);
@@ -179,7 +181,7 @@ export default function EnqueteBouwer({
       {/* RESULTATEN */}
       {tab === "resultaten" && (
         <div className="mt-4">
-          <EnqueteResultaten titel={title} vragen={questions} reacties={reacties} />
+          <EnqueteResultaten surveyId={survey.id} titel={title} vragen={questions} reacties={reacties} />
         </div>
       )}
 
@@ -301,7 +303,7 @@ export default function EnqueteBouwer({
             return (
               <div key={q.id} className="rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="flex items-start gap-2">
-                  <span className="mt-2 text-sm font-semibold text-slate-500">{i + 1}.</span>
+                  <span className="mt-2 text-sm font-semibold text-slate-500">{nummers[i]}.</span>
                   <div className="min-w-0 flex-1">
                     <input
                       value={q.section ?? ""}
@@ -357,12 +359,22 @@ export default function EnqueteBouwer({
 
                     {q.config.toonAls && (
                       <p className="mt-2 text-xs text-slate-500">
-                        Alleen getoond als vraag {questions.findIndex((x) => x.id === q.config.toonAls!.vraag) + 1} is:{" "}
-                        <strong>{q.config.toonAls.waarden.join(" / ")}</strong>
+                        Alleen getoond als{" "}
+                        {(Array.isArray(q.config.toonAls) ? q.config.toonAls : [q.config.toonAls]).map((t, ti) => {
+                          const bron = questions.find((x) => x.id === t.vraag);
+                          return (
+                            <span key={ti}>
+                              {ti > 0 && " of "}
+                              vraag {bron ? nummers[questions.indexOf(bron)] : "?"} is{" "}
+                              <strong>{t.waarden.map((w) => (bron ? labelVan(bron, w) : w)).join(" / ")}</strong>
+                            </span>
+                          );
+                        })}
                       </p>
                     )}
                     {(q.type === "meerkeuze" || q.type === "meerdere") && !q.config.groepen?.length && (
                       <OptionsEditor
+                        vast={!!q.config.codes?.length}
                         options={q.options}
                         onChange={(options) => {
                           patchLocal(q.id, { options });
@@ -438,10 +450,13 @@ function OptionsEditor({
   options,
   onChange,
   nieuw = "Optie",
+  vast = false,
 }: {
   options: string[];
   onChange: (o: string[]) => void;
   nieuw?: string;
+  /** opties met vaste antwoordcodes: labels aanpassen mag, toevoegen of weghalen niet */
+  vast?: boolean;
 }) {
   const [lokaal, setLokaal] = useState(options);
   const opslaan = (o: string[]) => {
@@ -459,14 +474,18 @@ function OptionsEditor({
             onBlur={() => onChange(lokaal)}
             className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-emerald-500"
           />
-          {lokaal.length > 1 && (
+          {lokaal.length > 1 && !vast && (
             <button onClick={() => opslaan(lokaal.filter((_, j) => j !== i))} aria-label="Verwijderen" className="text-slate-300 hover:text-red-500">✕</button>
           )}
         </div>
       ))}
-      <button onClick={() => opslaan([...lokaal, `${nieuw} ${lokaal.length + 1}`])} className="text-xs font-medium text-emerald-600 hover:underline">
-        + toevoegen
-      </button>
+      {vast ? (
+        <p className="text-xs text-slate-400">Vaste antwoordcodes voor vergelijking: alleen de teksten zijn aan te passen.</p>
+      ) : (
+        <button onClick={() => opslaan([...lokaal, `${nieuw} ${lokaal.length + 1}`])} className="text-xs font-medium text-emerald-600 hover:underline">
+          + toevoegen
+        </button>
+      )}
     </div>
   );
 }

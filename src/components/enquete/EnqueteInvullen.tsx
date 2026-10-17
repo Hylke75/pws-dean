@@ -3,10 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
-  ANDERS,
   WEET_NIET,
   aantalZichtbaar,
   andersSleutel,
+  andersWaarde,
+  voldoet,
+  waardeVan,
+  zichtbaar,
   labelsVoor,
   naarIndienen,
   opschonen,
@@ -47,6 +50,8 @@ export default function EnqueteInvullen({ token }: { token: string }) {
   const [antwoorden, setAntwoorden] = useState<Antwoorden>({});
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  // Melding bij te veel keuzes; hoort bij één stap, zodat hij verdwijnt bij een andere vraag.
+  const [melding, setMelding] = useState<{ stap: number; tekst: string } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const supabase = createClient();
 
@@ -114,7 +119,9 @@ export default function EnqueteInvullen({ token }: { token: string }) {
   /** Eén keuze tikken = antwoord geven én door naar de volgende vraag. */
   function kiesEnDoor(key: string, waarde: string, blijf = false) {
     zet(key, [waarde]);
-    if (laatste || blijf) return;
+    // Kijk naar de stappen ná deze keuze: een antwoord kan een vervolgvraag zichtbaar maken.
+    const na = survey ? stappen(survey.questions, opschonen(survey.questions, { ...antwoorden, [key]: [waarde] })) : lijst;
+    if (stap >= na.length - 1 || blijf) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setStap((s) => s + 1), 280);
   }
@@ -212,6 +219,14 @@ export default function EnqueteInvullen({ token }: { token: string }) {
   const gekozen = antwoorden[key] ?? [];
   const beantwoord = stapBeantwoord(huidig, antwoorden);
   const voortgang = Math.round((stap / lijst.length) * 100);
+  const totaal = aantalZichtbaar(survey.questions, antwoorden);
+  const ingevuld = survey.questions.filter(
+    (q) => !q.config.vervolg && zichtbaar(q, antwoorden) && lijst.filter((s) => s.vraag.id === q.id).every((s) => stapBeantwoord(s, antwoorden)),
+  ).length;
+  const exclusief = vraag.config.exclusief ?? [];
+  const gewoneKeuzes = gekozen.filter((g) => !exclusief.includes(g)).length;
+  const over = vraag.config.max ? Math.max(0, vraag.config.max - gewoneKeuzes) : null;
+  const anders = andersWaarde(vraag);
   const vorigeSectie = stap > 0 ? lijst[stap - 1].vraag.section : null;
 
   return (
@@ -220,8 +235,8 @@ export default function EnqueteInvullen({ token }: { token: string }) {
         {/* Voortgang */}
         <div className="sticky top-0 z-10 -mx-4 bg-slate-50/95 px-4 pb-3 pt-3 backdrop-blur">
           <div className="flex items-center justify-between text-sm text-slate-500">
-            <span>Vraag {nr} van {aantalZichtbaar(survey.questions, antwoorden)}</span>
-            <span>{voortgang}%</span>
+            <span>Vraag {nr} van {totaal}</span>
+            <span>{ingevuld} van {totaal} ingevuld</span>
           </div>
           <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={voortgang} aria-valuemin={0} aria-valuemax={100}>
             <div className="h-full rounded-full bg-emerald-500 transition-all duration-300" style={{ width: `${voortgang}%` }} />
@@ -247,27 +262,35 @@ export default function EnqueteInvullen({ token }: { token: string }) {
             </h2>
           )}
 
+          {vraag.config.toelichting && <p className="mt-1 text-slate-500">{vraag.config.toelichting}</p>}
+          {vraag.config.extraToelichting && voldoet(vraag.config.extraToelichting.als, antwoorden) && (
+            <p className="mt-1 text-slate-500">{vraag.config.extraToelichting.tekst}</p>
+          )}
+
           {vraag.type === "meerdere" && (
-            <p className="mt-1 text-slate-500">
-              {vraag.config.max ? `Kies maximaal ${vraag.config.max}` : "Meerdere antwoorden mogelijk"}
-              {vraag.config.max ? ` · ${gekozen.length} gekozen` : ""}
+            <p className="mt-1 text-slate-500" aria-live="polite">
+              Meerdere antwoorden mogelijk
+              {over !== null && ` · kies maximaal ${vraag.config.max} · nog ${over} over`}
             </p>
           )}
 
           <div className="mt-4">
             {(vraag.type === "meerkeuze" || vraag.type === "janee") && (
               <div className="space-y-2">
-                {optiesVoor(vraag, antwoorden).map((opt) => (
-                  <Keuze
-                    key={opt}
-                    rond
-                    actief={gekozen[0] === opt}
-                    onClick={() => kiesEnDoor(key, opt, opt === ANDERS && !!vraag.config.andersTekst)}
-                  >
-                    {opt}
-                  </Keuze>
-                ))}
-                {vraag.config.andersTekst && gekozen.includes(ANDERS) && (
+                {optiesVoor(vraag, antwoorden).map((opt) => {
+                  const w = waardeVan(vraag, opt);
+                  return (
+                    <Keuze
+                      key={opt}
+                      rond
+                      actief={gekozen[0] === w}
+                      onClick={() => kiesEnDoor(key, w, w === anders && !!vraag.config.andersTekst)}
+                    >
+                      {opt}
+                    </Keuze>
+                  );
+                })}
+                {vraag.config.andersTekst && gekozen.includes(anders) && (
                   <AndersVeld waarde={antwoorden[andersSleutel(vraag.id)]?.[0] ?? ""} onChange={(t) => zet(andersSleutel(vraag.id), [t])} />
                 )}
               </div>
@@ -276,15 +299,33 @@ export default function EnqueteInvullen({ token }: { token: string }) {
             {vraag.type === "meerdere" && (
               <div className="space-y-2">
                 {vraag.options.map((opt) => {
-                  const actief = gekozen.includes(opt);
-                  const vol = !actief && !!vraag.config.max && gekozen.filter((g) => !(vraag.config.exclusief ?? []).includes(g)).length >= vraag.config.max && !(vraag.config.exclusief ?? []).includes(opt);
+                  const w = waardeVan(vraag, opt);
+                  const actief = gekozen.includes(w);
+                  const vol = !actief && over === 0 && !exclusief.includes(w);
                   return (
-                    <Keuze key={opt} actief={actief} gedimd={vol} onClick={() => zet(key, wisselKeuze(gekozen, opt, vraag.config))}>
+                    <Keuze
+                      key={opt}
+                      actief={actief}
+                      gedimd={vol}
+                      onClick={() => {
+                        if (vol) {
+                          setMelding({ stap, tekst: `Je kunt maximaal ${vraag.config.max} antwoorden kiezen. Haal eerst een keuze weg.` });
+                          return;
+                        }
+                        setMelding(null);
+                        zet(key, wisselKeuze(gekozen, w, vraag.config));
+                      }}
+                    >
                       {opt}
                     </Keuze>
                   );
                 })}
-                {vraag.config.andersTekst && gekozen.includes(ANDERS) && (
+                {melding?.stap === stap && (
+                  <p role="status" className="rounded-xl bg-amber-50 px-4 py-3 text-amber-800">
+                    {melding.tekst}
+                  </p>
+                )}
+                {vraag.config.andersTekst && gekozen.includes(anders) && (
                   <AndersVeld waarde={antwoorden[andersSleutel(vraag.id)]?.[0] ?? ""} onChange={(t) => zet(andersSleutel(vraag.id), [t])} />
                 )}
               </div>
@@ -294,6 +335,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
               <div className="space-y-2">
                 {labelsVoor(vraag).map((label, i) => (
                   <Keuze key={label} rond actief={gekozen[0] === String(i + 1)} onClick={() => kiesEnDoor(key, String(i + 1))}>
+                    <span className="mr-2 inline-block w-4 tabular-nums text-slate-400">{i + 1}</span>
                     {label}
                   </Keuze>
                 ))}
@@ -320,7 +362,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
                   value={gekozen[0] ?? ""}
                   onChange={(e) => zet(key, [e.target.value])}
                   maxLength={vraag.config.maxLengte ?? 2000}
-                  rows={(vraag.config.maxLengte ?? 2000) > 300 ? 6 : 4}
+                  rows={(vraag.config.maxLengte ?? 2000) > 300 ? 5 : 3}
                   placeholder="Antwoord…"
                   className="w-full resize-none rounded-2xl border border-slate-300 bg-white p-4 text-base leading-relaxed outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                 />
@@ -416,6 +458,7 @@ function Keuze({
       type="button"
       onClick={onClick}
       aria-pressed={actief}
+      aria-disabled={gedimd || undefined}
       className={`flex min-h-[3.25rem] w-full items-center gap-3 rounded-2xl border-2 px-4 py-2.5 text-left text-base transition active:scale-[0.99] ${
         actief
           ? "border-emerald-500 bg-emerald-50 font-semibold text-emerald-900"

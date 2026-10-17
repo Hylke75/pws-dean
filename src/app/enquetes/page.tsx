@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function EnquetesPage() {
   const supabase = await createClient();
-  const { data: surveys } = await supabase.from("pws_surveys").select("*").order("created_at", { ascending: false });
+  const { data: surveys } = await supabase.from("pws_surveys").select("*").eq("verborgen", false).order("created_at", { ascending: false });
 
   // Aantal reacties per enquête
   const counts: Record<string, number> = {};
