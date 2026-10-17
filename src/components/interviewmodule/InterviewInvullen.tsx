@@ -245,7 +245,12 @@ export default function InterviewInvullen({ token, voorbeeld }: { token?: string
 
           <div className="sticky bottom-0 mt-8 bg-slate-50 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
             <button
-              onClick={() => setFase(data.toestemming?.deelname || voorbeeld ? "vragen" : "toestemming")}
+              onClick={() => {
+                // Bij hervatten verder bij de eerste nog onbeantwoorde vraag.
+                const open = vragen.findIndex((v) => !(antwoorden[v.key] ?? "").trim());
+                if (beantwoord > 0) setStap(open === -1 ? vragen.length - 1 : open);
+                setFase(data.toestemming?.deelname || voorbeeld ? "vragen" : "toestemming");
+              }}
               className="h-14 w-full rounded-2xl bg-emerald-600 text-lg font-semibold text-white shadow-sm hover:bg-emerald-700"
             >
               {beantwoord > 0 ? t("Verdergaan", "Verdergaan") : t("Beginnen", "Beginnen")}
