@@ -69,6 +69,7 @@ export default function InterviewBeheerDetail({
             <h1 className="text-xl font-bold text-slate-900">{u.naam}</h1>
             <p className="text-slate-600">{[u.functie, u.organisatie].filter(Boolean).join(" · ") || "Geen functie of organisatie ingevuld"}</p>
             <p className="text-sm text-slate-500">{u.type_naam}{u.email ? ` · ${u.email}` : ""}</p>
+            {u.taal === "en" && <p className="mt-1 text-sm font-medium text-sky-700">De respondent vult het interview in het Engels in.</p>}
           </div>
           <div className="flex items-center gap-2">
             {u.gearchiveerd && <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-600">Gearchiveerd</span>}
@@ -147,6 +148,7 @@ export default function InterviewBeheerDetail({
             return (
               <li key={v.key}>
                 <p className="font-medium text-slate-900">{i + 1}. {v.tekst}</p>
+                {u.taal === "en" && v.tekst_en && <p className="text-sm text-slate-500">Gesteld als: {v.tekst_en}</p>}
                 <div className="mt-1 flex flex-wrap gap-1">
                   {v.algemeen && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">algemeen</span>}
                   {v.themas.map((k) => (

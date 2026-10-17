@@ -128,6 +128,15 @@ export default function TypeBewerker({
           Introductietekst
           <textarea defaultValue={t.intro ?? ""} rows={8} onBlur={(e) => e.target.value !== (t.intro ?? "") && bewaarType({ intro: e.target.value.trim() || null })} className={veld} />
         </label>
+        <label className="block text-sm text-slate-600">
+          Naam in het Engels
+          <input defaultValue={t.naam_en ?? ""} lang="en" onBlur={(e) => e.target.value !== (t.naam_en ?? "") && bewaarType({ naam_en: e.target.value.trim() || null })} className={veld} />
+        </label>
+        <label className="block text-sm text-slate-600">
+          Introductietekst in het Engels
+          <textarea defaultValue={t.intro_en ?? ""} rows={8} lang="en" onBlur={(e) => e.target.value !== (t.intro_en ?? "") && bewaarType({ intro_en: e.target.value.trim() || null })} className={veld} />
+          <span className="mt-1 block text-xs text-slate-500">Respondenten kunnen met de knop ‘English’ het interview in het Engels invullen. De vragen vertaal je bij Vragen en typen.</span>
+        </label>
         <p className="text-xs text-slate-500">
           {set.length} vragen · geschatte invultijd {geschatteMinuten(set.length)} minuten. Wijzigingen gelden voor nieuwe uitnodigingen;
           verstuurde interviews houden hun eigen vaste versie.

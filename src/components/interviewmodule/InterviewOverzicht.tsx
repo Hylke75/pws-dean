@@ -20,6 +20,7 @@ export type OverzichtRij = {
   laatste_activiteit: string | null;
   afgerond_op: string | null;
   created_at: string;
+  taal?: "nl" | "en" | null;
 };
 
 const datum = (iso: string | null) =>
@@ -119,7 +120,10 @@ export default function InterviewOverzicht({ rijen, types }: { rijen: OverzichtR
                     </Link>
                     <p className="text-xs text-slate-500">{[r.functie, r.organisatie].filter(Boolean).join(" · ") || "–"}</p>
                   </td>
-                  <td className="block px-4 text-slate-600 md:table-cell md:py-3">{r.type_naam}</td>
+                  <td className="block px-4 text-slate-600 md:table-cell md:py-3">
+                    {r.type_naam}
+                    {r.taal === "en" && <span className="ml-1.5 rounded bg-sky-50 px-1.5 text-xs font-medium text-sky-700">Engels</span>}
+                  </td>
                   <td className="hidden px-4 py-3 text-slate-600 md:table-cell">{datum(r.uitgenodigd_op)}</td>
                   <td className="hidden px-4 py-3 text-slate-600 md:table-cell">{datum(r.laatste_activiteit)}</td>
                   <td className="hidden px-4 py-3 text-slate-600 md:table-cell">{datum(r.afgerond_op)}</td>

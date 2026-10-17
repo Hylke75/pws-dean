@@ -6,7 +6,7 @@ import InterviewAnalyse, { type OpgeslagenAnalyse } from "@/components/interview
 
 export const dynamic = "force-dynamic";
 
-const KOLOMMEN = "id, type_id, type_naam, naam, functie, organisatie, vragen, status, gearchiveerd, toestemming, afgerond_op, created_at";
+const KOLOMMEN = "id, type_id, type_naam, naam, functie, organisatie, vragen, status, gearchiveerd, toestemming, afgerond_op, created_at, taal";
 
 export default async function InterviewAnalysePage() {
   const supabase = await createClient();

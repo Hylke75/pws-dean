@@ -11,7 +11,7 @@ type Formaat = (typeof FORMATEN)[number];
 
 // Alles behalve de token-hash.
 const KOLOMMEN =
-  "id, type_id, type_naam, naam, email, functie, organisatie, boodschap, aanspreekvorm, intro, vragen, status, gearchiveerd, toestemming, uitgenodigd_op, laatste_activiteit, afgerond_op, bewaren_tot, created_at";
+  "id, type_id, type_naam, naam, email, functie, organisatie, boodschap, aanspreekvorm, intro, vragen, status, gearchiveerd, toestemming, uitgenodigd_op, laatste_activiteit, afgerond_op, bewaren_tot, created_at, taal";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

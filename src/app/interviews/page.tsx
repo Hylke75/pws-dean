@@ -14,7 +14,7 @@ export default async function InterviewsPage() {
     supabase.from("pws_interviews").select("*").order("created_at", { ascending: false }),
     supabase
       .from("pws_iv_uitnodigingen")
-      .select("id, type_id, type_naam, naam, functie, organisatie, status, gearchiveerd, uitgenodigd_op, laatste_activiteit, afgerond_op, created_at")
+      .select("id, type_id, type_naam, naam, functie, organisatie, status, gearchiveerd, uitgenodigd_op, laatste_activiteit, afgerond_op, created_at, taal")
       .order("created_at", { ascending: false }),
     supabase.from("pws_iv_types").select("*").eq("status", "gepubliceerd").eq("gearchiveerd", false).order("order_index"),
   ]);

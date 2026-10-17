@@ -136,6 +136,7 @@ export default function InterviewAnalyse({
                     </p>
                     {(w.functie || w.organisatie) && <p className="text-xs text-slate-500">{[w.functie, w.organisatie].filter(Boolean).join(", ")}</p>}
                     <div className="mt-1 flex flex-wrap gap-1">
+                      {u.taal === "en" && <span className="rounded bg-sky-50 px-1.5 text-xs text-sky-700">in het Engels</span>}
                       {!w.magCiteren && <span className="rounded bg-amber-100 px-1.5 text-xs text-amber-800">niet letterlijk citeren</span>}
                       {!w.naamToegestaan && <span className="rounded bg-amber-50 px-1.5 text-xs text-amber-700">naam niet noemen</span>}
                     </div>

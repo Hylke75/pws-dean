@@ -46,6 +46,17 @@ export default function VraagBewerker({
         Toelichting (optioneel)
         <input defaultValue={v.toelichting ?? ""} onBlur={(e) => e.target.value !== (v.toelichting ?? "") && bewaar({ toelichting: e.target.value.trim() || null })} className={veld} />
       </label>
+      <label className="mt-2 block text-xs font-medium text-slate-500">
+        Engelse vertaling (voor wie het interview in het Engels invult)
+        <textarea defaultValue={v.tekst_en ?? ""} rows={2} lang="en" onBlur={(e) => e.target.value !== (v.tekst_en ?? "") && bewaar({ tekst_en: e.target.value.trim() || null })} className={veld} />
+        {!v.tekst_en && <span className="mt-0.5 block font-normal text-amber-700">Zonder vertaling ziet een Engelstalige respondent de Nederlandse vraag.</span>}
+      </label>
+      {v.toelichting && (
+        <label className="mt-2 block text-xs font-medium text-slate-500">
+          Engelse toelichting (optioneel)
+          <input defaultValue={v.toelichting_en ?? ""} lang="en" onBlur={(e) => e.target.value !== (v.toelichting_en ?? "") && bewaar({ toelichting_en: e.target.value.trim() || null })} className={veld} />
+        </label>
+      )}
       <fieldset className="mt-2">
         <legend className="text-xs font-medium text-slate-500">Thema&apos;s</legend>
         <div className="mt-1 flex flex-wrap gap-1.5">

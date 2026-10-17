@@ -115,3 +115,21 @@ describe("hulpjes", () => {
     expect(pdfVeilig("a‑b", kan)).toBe("a-b");
   });
 });
+
+describe("Engelse versie", () => {
+  it("gebruikt in de vergelijking en CSV de vraag zoals de respondent die zag", () => {
+    const c = uitnodiging("c", {
+      created_at: "2026-10-18T09:45:00Z",
+      taal: "en",
+      vragen: [{ ...vraag("alg_1", "Welke invloed heeft AI volgens u?", ["huidig_werk"]), tekst_en: "How is AI influencing work?" }],
+    });
+    const antw: IvAntwoord[] = [{ uitnodiging_id: "c", vraag_key: "alg_1", antwoord: "A lot.", bijgewerkt_op: "" }];
+    const [rij] = vergelijkPerThema([a, c], [...antwoorden, ...antw], "huidig_werk");
+    expect(rij.tekst).toBe("Welke invloed heeft AI volgens u?");
+    expect(rij.antwoorden.find((x) => x.uitnodiging_id === "c")?.tekst).toBe("How is AI influencing work?");
+    const tekst = interviewsNaarCsv([c], antw, [], new Map([["c", 3]]), false);
+    expect(tekst).toContain('"Engels"');
+    expect(tekst).toContain('"How is AI influencing work?"');
+    expect(tekst).toContain('"Welke invloed heeft AI volgens u?"');
+  });
+});

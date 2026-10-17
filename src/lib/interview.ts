@@ -23,6 +23,9 @@ export type IvVraag = {
   key: string;
   tekst: string;
   toelichting: string | null;
+  /** Engelse tekst; ontbreekt bij vragen zonder vertaling */
+  tekst_en?: string | null;
+  toelichting_en?: string | null;
   verplicht: boolean;
   vraagtype: "open";
   themas: string[];
@@ -57,6 +60,8 @@ export type IvUitnodiging = {
   afgerond_op: string | null;
   bewaren_tot: string | null;
   created_at: string;
+  /** taal die de respondent koos; null = Nederlands (standaard) */
+  taal?: "nl" | "en" | null;
 };
 
 export type IvAntwoord = { uitnodiging_id: string; vraag_key: string; antwoord: string; bijgewerkt_op: string };
@@ -70,6 +75,8 @@ export type IvType = {
   beschrijving: string | null;
   aanspreekvorm: "u" | "je";
   intro: string | null;
+  naam_en: string | null;
+  intro_en: string | null;
   status: "concept" | "gepubliceerd";
   order_index: number;
   gearchiveerd: boolean;
@@ -83,12 +90,19 @@ export type IvVraagBron = {
   tekst_je: string | null;
   toelichting: string | null;
   toelichting_je: string | null;
+  tekst_en: string | null;
+  toelichting_en: string | null;
   vraagtype: "open";
   themas: string[];
   actief: boolean;
 };
 
 export const ZONDER_THEMA = "_geen";
+
+/** De vraag zoals de respondent hem zag: Engels als die taal gekozen is en er een vertaling is. */
+export function vraagTekstVoor(u: Pick<IvUitnodiging, "taal">, v: IvVraag): string {
+  return u.taal === "en" && v.tekst_en ? v.tekst_en : v.tekst;
+}
 
 /** Geschatte invultijd in minuten voor open vragen (ongeveer 2,5 minuut per vraag, afgerond op 5). */
 export function geschatteMinuten(aantalVragen: number): number {
@@ -167,7 +181,7 @@ export function vergelijkPerThema(
         rij = { key: v.key, tekst: v.tekst, antwoorden: [] };
         perKey.set(v.key, rij);
       }
-      rij.antwoorden.push({ uitnodiging_id: u.id, tekst: v.tekst, antwoord: tekst });
+      rij.antwoorden.push({ uitnodiging_id: u.id, tekst: vraagTekstVoor(u, v), antwoord: tekst });
     }
   }
   // Algemene vragen eerst, daarna op volgorde van eerste voorkomen.
@@ -191,8 +205,8 @@ export function interviewsNaarCsv(
   const themaNaam = new Map(themas.map((t) => [t.key, t.naam]));
   const antw = new Map(antwoorden.map((a) => [`${a.uitnodiging_id}|${a.vraag_key}`, a.antwoord]));
   const kop = [
-    "respondent_nr", "respondent", "functie", "organisatie", "interviewtype", "status", "afgerond_op",
-    "naam_vermelden", "letterlijk_citeren", "vraag_nr", "vraag_id", "vraag", "themas", "antwoord",
+    "respondent_nr", "respondent", "functie", "organisatie", "interviewtype", "status", "afgerond_op", "taal",
+    "naam_vermelden", "letterlijk_citeren", "vraag_nr", "vraag_id", "vraag", "vraag_zoals_gesteld", "themas", "antwoord",
   ];
   const rijen: string[][] = [kop];
   for (const u of uitnodigingen) {
@@ -201,8 +215,9 @@ export function interviewsNaarCsv(
     u.vragen.forEach((v, i) => {
       rijen.push([
         String(nr), w.label, w.functie ?? "", w.organisatie ?? "", u.type_naam, u.status, u.afgerond_op ?? "",
+        u.taal === "en" ? "Engels" : "Nederlands",
         w.naamToegestaan ? "ja" : "nee", w.magCiteren ? "ja" : "nee",
-        String(i + 1), v.key, v.tekst, v.themas.map((t) => themaNaam.get(t) ?? t).join(", "),
+        String(i + 1), v.key, v.tekst, vraagTekstVoor(u, v), v.themas.map((t) => themaNaam.get(t) ?? t).join(", "),
         antw.get(`${u.id}|${v.key}`) ?? "",
       ]);
     });

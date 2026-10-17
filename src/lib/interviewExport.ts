@@ -5,6 +5,7 @@ import {
   pdfVeilig,
   privacyNotitie,
   vergelijkPerThema,
+  vraagTekstVoor,
   weergave,
   type IvAntwoord,
   type IvThema,
@@ -46,10 +47,13 @@ function verslagBlokken(d: ExportData): Blok[] {
     if (w.functie) uit.push({ soort: "meta", tekst: `Functie: ${w.functie}` });
     if (w.organisatie) uit.push({ soort: "meta", tekst: `Organisatie: ${w.organisatie}` });
     uit.push({ soort: "meta", tekst: `Interviewtype: ${u.type_naam}` });
+    if (u.taal === "en") uit.push({ soort: "meta", tekst: "Ingevuld in het Engels" });
     uit.push({ soort: "meta", tekst: u.afgerond_op ? `Afgerond op: ${datum(u.afgerond_op)}` : `Status: nog niet afgerond (laatste activiteit ${datum(u.laatste_activiteit)})` });
     for (const n of privacyNotitie(w)) uit.push({ soort: "let-op", tekst: `Let op: ${n}` });
     u.vragen.forEach((v, j) => {
       uit.push({ soort: "subkop", tekst: `${j + 1}. ${v.tekst}` });
+      const gesteld = vraagTekstVoor(u, v);
+      if (gesteld !== v.tekst) uit.push({ soort: "meta", tekst: `Gesteld als: ${gesteld}` });
       const a = antwoordVan(d, u.id, v.key);
       uit.push(a ? { soort: "tekst", tekst: a } : { soort: "leeg", tekst: "(niet beantwoord)" });
     });
@@ -70,7 +74,7 @@ function vergelijkBlokken(d: ExportData): Blok[] {
       for (const a of r.antwoorden) {
         const u = d.uitnodigingen.find((x) => x.id === a.uitnodiging_id)!;
         const w = weergave(u, d.nummers.get(u.id) ?? 0, d.anoniem);
-        uit.push({ soort: "meta", tekst: `${w.label}${w.magCiteren ? "" : " – niet letterlijk citeren"}` });
+        uit.push({ soort: "meta", tekst: `${w.label}${u.taal === "en" ? " – antwoord in het Engels" : ""}${w.magCiteren ? "" : " – niet letterlijk citeren"}` });
         uit.push(a.antwoord ? { soort: "tekst", tekst: a.antwoord } : { soort: "leeg", tekst: "(niet beantwoord)" });
       }
     }
