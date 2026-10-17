@@ -17,6 +17,7 @@ import {
   type Vraag,
 } from "@/lib/enquete";
 import { SchaalLegenda, Staven, VerdelingRij } from "./Grafieken";
+import ReactiesBeheer from "./ReactiesBeheer";
 
 export default function EnqueteResultaten({
   surveyId,
@@ -122,6 +123,10 @@ export default function EnqueteResultaten({
             </div>
           </section>
         ))}
+
+      {totaal > 0 && (
+        <ReactiesBeheer surveyId={surveyId} vragen={vragen} reacties={reacties} totaalAlle={alleReacties.length} />
+      )}
     </div>
   );
 }

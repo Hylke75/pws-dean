@@ -120,7 +120,11 @@ export default function EnqueteBouwer({
 
   async function reactiesWissen() {
     if (!confirm(`Alle ${responseCount} reacties van deze enquête definitief verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
-    await supabase.from("pws_survey_responses").delete().eq("survey_id", survey.id);
+    const { error } = await supabase.from("pws_survey_responses").delete().eq("survey_id", survey.id);
+    if (error) {
+      alert("Verwijderen lukte niet. Probeer het opnieuw.");
+      return;
+    }
     router.refresh();
   }
 
