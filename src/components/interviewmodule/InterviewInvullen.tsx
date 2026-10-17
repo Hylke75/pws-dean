@@ -75,7 +75,8 @@ export default function InterviewInvullen({ token, voorbeeld }: { token?: string
     } catch {
       // geen lokale opslag beschikbaar
     }
-    if (!voorbeeld && token) void supabase.rpc("pws_iv_taal", { p_token: token, p_taal: nieuw });
+    // .then() is nodig: zonder await of then verstuurt supabase-js het verzoek niet.
+    if (!voorbeeld && token) supabase.rpc("pws_iv_taal", { p_token: token, p_taal: nieuw }).then(() => undefined);
   }
   const taalKnop = <TaalKnop taal={taal} onKies={kiesTaal} />;
 
@@ -96,6 +97,10 @@ export default function InterviewInvullen({ token, voorbeeld }: { token?: string
       setData(open);
       const gekozen = open.taal ?? bewaardeTaal();
       if (gekozen) setTaalState(gekozen);
+      // Taal uit dit apparaat ook bij het interview vastleggen.
+      if (!open.taal && gekozen && (open.status === "uitgenodigd" || open.status === "gestart")) {
+        supabase.rpc("pws_iv_taal", { p_token: token, p_taal: gekozen }).then(() => undefined);
+      }
       if (open.status === "gesloten") return setFase("gesloten");
       if (open.status === "afgerond") return setFase("afgerond");
       let antw = { ...open.antwoorden };
