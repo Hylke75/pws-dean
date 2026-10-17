@@ -9,9 +9,16 @@ export default async function EnquetesPage() {
   const { data: surveys } = await supabase.from("pws_surveys").select("*").order("created_at", { ascending: false });
 
   // Aantal reacties per enquête
-  const { data: responses } = await supabase.from("pws_survey_responses").select("survey_id");
   const counts: Record<string, number> = {};
-  for (const r of responses ?? []) counts[r.survey_id] = (counts[r.survey_id] ?? 0) + 1;
+  await Promise.all(
+    (surveys ?? []).map(async (s) => {
+      const { count } = await supabase
+        .from("pws_survey_responses")
+        .select("id", { count: "exact", head: true })
+        .eq("survey_id", s.id);
+      counts[s.id] = count ?? 0;
+    }),
+  );
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">

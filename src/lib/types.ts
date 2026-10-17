@@ -118,7 +118,29 @@ export type Subquestion = {
 };
 
 export type SurveyStatus = "concept" | "open" | "gesloten";
-export type QuestionType = "open" | "meerkeuze" | "schaal" | "janee";
+export type QuestionType = "open" | "meerkeuze" | "meerdere" | "schaal" | "stellingen" | "janee";
+
+export type QuestionConfig = {
+  /** meerdere: maximaal aantal keuzes */
+  max?: number;
+  /** meerdere: opties die alle andere keuzes wissen (bv. "Ik gebruik geen AI") */
+  exclusief?: string[];
+  /** schaal/stellingen: vijf antwoordlabels, van 1 t/m 5 */
+  labels?: string[];
+  /** schaal/stellingen: extra knop "Weet ik niet" */
+  weetNiet?: boolean;
+  /** stellingen: de stellingen zelf */
+  items?: string[];
+  /** stellingen: korte namen voor grafieken */
+  kort?: string[];
+  /** open: maximaal aantal tekens */
+  maxLengte?: number;
+  /** meerkeuze: opties hangen af van het antwoord op een eerdere vraag */
+  afhankelijkVan?: string;
+  groepen?: { als: string[]; opties: string[] }[];
+  /** sleutel om dezelfde vraag over enquêtes heen te vergelijken */
+  vergelijk?: string;
+};
 
 export type Survey = {
   id: string;
@@ -126,6 +148,8 @@ export type Survey = {
   intro: string | null;
   status: SurveyStatus;
   share_token: string;
+  slug: string | null;
+  afsluiting: string | null;
   phase_id: string | null;
   created_at: string;
 };
@@ -138,6 +162,8 @@ export type SurveyQuestion = {
   options: string[];
   required: boolean;
   order_index: number;
+  section: string | null;
+  config: QuestionConfig;
 };
 
 export type Interview = {

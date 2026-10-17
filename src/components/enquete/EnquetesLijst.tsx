@@ -44,6 +44,16 @@ export default function EnquetesLijst({ initial, counts }: { initial: Survey[]; 
         </button>
       </form>
 
+      {items.filter((s) => s.slug).length > 1 && (
+        <Link
+          href="/enquetes/vergelijk"
+          className="mb-4 flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 hover:bg-emerald-100"
+        >
+          <span>📊 Vergelijk de enquêtes: leerlingen, docenten en werkenden naast elkaar</span>
+          <span aria-hidden>→</span>
+        </Link>
+      )}
+
       {items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
           Nog geen enquêtes. Maak je eerste hierboven aan →
@@ -58,7 +68,10 @@ export default function EnquetesLijst({ initial, counts }: { initial: Survey[]; 
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-slate-900">{s.title}</p>
-                  <p className="text-xs text-slate-500">{counts[s.id] ?? 0} reactie{(counts[s.id] ?? 0) === 1 ? "" : "s"}</p>
+                  <p className="text-xs text-slate-500">
+                    {counts[s.id] ?? 0} reactie{(counts[s.id] ?? 0) === 1 ? "" : "s"}
+                    {s.slug && <> · /e/{s.slug}</>}
+                  </p>
                 </div>
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[s.status]}`}>
                   {STATUS_LABEL[s.status]}

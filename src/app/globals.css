@@ -18,3 +18,13 @@ body {
   outline-offset: 2px;
   border-radius: 3px;
 }
+
+/* Enquête: rustige overgang tussen vragen */
+@keyframes enq-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.enq-stap { animation: enq-in 0.2s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .enq-stap { animation: none; }
+}
