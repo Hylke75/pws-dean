@@ -57,5 +57,9 @@ export async function GET(request: NextRequest) {
     if (ok) mailed++;
   }
 
-  return NextResponse.json({ ok: true, reminders: rows.length, mailed });
+  // Interviews waarvan de bewaartermijn is verstreken definitief verwijderen.
+  const { data: opgeruimd, error: opruimFout } = await supabase.rpc("pws_iv_opruimen");
+  if (opruimFout) console.error("[cron] opruimen interviews mislukt");
+
+  return NextResponse.json({ ok: true, reminders: rows.length, mailed, interviewsOpgeruimd: opgeruimd ?? 0 });
 }
