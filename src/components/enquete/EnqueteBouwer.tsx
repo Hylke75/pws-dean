@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { STANDAARD_LABELS, labelVan, labelsVoor, vraagNummers, type Reactie } from "@/lib/enquete";
 import type { Survey, SurveyQuestion, QuestionConfig, QuestionType, SurveyStatus } from "@/lib/types";
 import EnqueteResultaten from "./EnqueteResultaten";
+import BevestigKnop from "@/components/BevestigKnop";
 
 const TYPE_LABEL: Record<QuestionType, string> = {
   meerkeuze: "Eén antwoord",
@@ -98,7 +99,6 @@ export default function EnqueteBouwer({
   }
   // Vragen worden niet echt verwijderd maar inactief gemaakt, zodat gegeven antwoorden bewaard blijven.
   async function removeQuestion(id: string) {
-    if (!confirm("Deze vraag uit de vragenlijst halen? Eerder gegeven antwoorden blijven bewaard.")) return;
     setQuestions((qs) => qs.filter((q) => q.id !== id));
     await supabase.from("pws_survey_questions").update({ actief: false }).eq("id", id);
   }
@@ -119,7 +119,6 @@ export default function EnqueteBouwer({
   }
 
   async function reactiesWissen() {
-    if (!confirm(`Alle ${responseCount} reacties van deze enquête definitief verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
     const { error } = await supabase.from("pws_survey_responses").delete().eq("survey_id", survey.id);
     if (error) {
       alert("Verwijderen lukte niet. Probeer het opnieuw.");
@@ -129,7 +128,6 @@ export default function EnqueteBouwer({
   }
 
   async function enqueteVerwijderen() {
-    if (!confirm(`De enquête "${title}" met alle vragen en ${responseCount} reacties definitief verwijderen?`)) return;
     await supabase.from("pws_surveys").delete().eq("id", survey.id);
     router.push("/enquetes");
     router.refresh();
@@ -262,13 +260,13 @@ export default function EnqueteBouwer({
             <p className="mb-2 text-xs text-slate-500">Zelf getest? Wis alle reacties voordat je de link echt deelt.</p>
             <div className="flex flex-wrap gap-2">
               {responseCount > 0 && (
-                <button onClick={reactiesWissen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
+                <BevestigKnop vraag={`Alle ${responseCount} reacties definitief wissen?`} bevestig="Ja, alles wissen" onBevestig={reactiesWissen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
                   Alle {responseCount} reacties wissen
-                </button>
+                </BevestigKnop>
               )}
-              <button onClick={enqueteVerwijderen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
+              <BevestigKnop vraag="Enquête met alle vragen en reacties definitief verwijderen?" onBevestig={enqueteVerwijderen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
                 Enquête verwijderen
-              </button>
+              </BevestigKnop>
             </div>
           </div>
         </div>
@@ -368,7 +366,7 @@ export default function EnqueteBouwer({
                       <div className="ml-auto flex items-center gap-1">
                         <button onClick={() => move(q.id, -1)} className="rounded p-1 text-slate-500 hover:bg-slate-100" aria-label="Omhoog">▲</button>
                         <button onClick={() => move(q.id, 1)} className="rounded p-1 text-slate-500 hover:bg-slate-100" aria-label="Omlaag">▼</button>
-                        <button onClick={() => removeQuestion(q.id)} className="rounded p-1 text-slate-300 hover:text-red-500" aria-label="Verwijderen">✕</button>
+                        <BevestigKnop vraag="Uit de vragenlijst halen?" bevestig="Ja" onBevestig={() => removeQuestion(q.id)} className="rounded p-1 text-slate-300 hover:text-red-500" ariaLabel="Verwijderen">✕</BevestigKnop>
                       </div>
                     </div>
 

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { fmtDate } from "@/lib/dates";
 import { LOGBOEK_DOEL_UREN } from "@/lib/constants";
 import type { LogEntry, Phase } from "@/lib/types";
+import BevestigKnop from "@/components/BevestigKnop";
 
 function todayIso() {
   const n = new Date();
@@ -83,7 +84,6 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
   }
 
   async function remove(id: string) {
-    if (!confirm("Deze logboekregel verwijderen?")) return;
     setItems((prev) => prev.filter((i) => i.id !== id));
     await supabase.from("pws_logboek").delete().eq("id", id);
   }
@@ -172,9 +172,9 @@ export default function LogboekClient({ initial, phases }: { initial: LogEntry[]
                       <button onClick={() => startEdit(it)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Bewerken">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button onClick={() => remove(it.id)} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500" aria-label="Verwijderen">
+                      <BevestigKnop vraag="Regel verwijderen?" onBevestig={() => remove(it.id)} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500" ariaLabel="Verwijderen">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" /></svg>
-                      </button>
+                      </BevestigKnop>
                     </div>
                   </div>
                 )}

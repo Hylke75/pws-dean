@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Subquestion } from "@/lib/types";
+import BevestigKnop from "@/components/BevestigKnop";
 
 export default function DeelvragenEditor({ initial }: { initial: Subquestion[] }) {
   const [items, setItems] = useState<Subquestion[]>(initial);
@@ -41,7 +42,6 @@ export default function DeelvragenEditor({ initial }: { initial: Subquestion[] }
   }
 
   async function remove(id: string) {
-    if (!confirm("Deze deelvraag verwijderen? Bronnen die eraan gekoppeld zijn, verliezen die koppeling.")) return;
     setItems((prev) => prev.filter((i) => i.id !== id));
     await supabase.from("pws_subquestions").delete().eq("id", id);
     flashSaved();
@@ -65,15 +65,16 @@ export default function DeelvragenEditor({ initial }: { initial: Subquestion[] }
             <span className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
               Deelvraag {i + 1}
             </span>
-            <button
-              onClick={() => remove(sq.id)}
+            <BevestigKnop
+              vraag="Deelvraag verwijderen? Gekoppelde bronnen verliezen de koppeling."
+              onBevestig={() => remove(sq.id)}
               className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
-              aria-label={`Deelvraag ${i + 1} verwijderen`}
+              ariaLabel={`Deelvraag ${i + 1} verwijderen`}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
               </svg>
-            </button>
+            </BevestigKnop>
           </div>
           <textarea
             value={sq.text}
