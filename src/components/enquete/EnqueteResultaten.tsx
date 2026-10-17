@@ -125,7 +125,7 @@ export default function EnqueteResultaten({
         ))}
 
       {totaal > 0 && (
-        <ReactiesBeheer surveyId={surveyId} vragen={vragen} reacties={reacties} totaalAlle={alleReacties.length} />
+        <ReactiesBeheer vragen={vragen} reacties={reacties} />
       )}
     </div>
   );

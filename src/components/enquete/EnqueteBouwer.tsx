@@ -118,15 +118,6 @@ export default function EnqueteBouwer({
     ]);
   }
 
-  async function reactiesWissen() {
-    const { error } = await supabase.from("pws_survey_responses").delete().eq("survey_id", survey.id);
-    if (error) {
-      alert("Verwijderen lukte niet. Probeer het opnieuw.");
-      return;
-    }
-    router.refresh();
-  }
-
   async function enqueteVerwijderen() {
     await supabase.from("pws_surveys").delete().eq("id", survey.id);
     router.push("/enquetes");
@@ -257,13 +248,8 @@ export default function EnqueteBouwer({
 
           <div className="rounded-2xl border border-red-100 bg-white p-4">
             <p className="text-sm font-medium text-slate-800">Opruimen</p>
-            <p className="mb-2 text-xs text-slate-500">Zelf getest? Wis alle reacties voordat je de link echt deelt.</p>
+            <p className="mb-2 text-xs text-slate-500">Verwijdert de enquête met alle vragen en reacties.</p>
             <div className="flex flex-wrap gap-2">
-              {responseCount > 0 && (
-                <BevestigKnop vraag={`Alle ${responseCount} reacties definitief wissen?`} bevestig="Ja, alles wissen" onBevestig={reactiesWissen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
-                  Alle {responseCount} reacties wissen
-                </BevestigKnop>
-              )}
               <BevestigKnop vraag="Enquête met alle vragen en reacties definitief verwijderen?" onBevestig={enqueteVerwijderen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
                 Enquête verwijderen
               </BevestigKnop>

@@ -1,57 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { WEET_NIET, andersWaarde, labelVan, labelsVoor, vraagNummers, type Reactie, type Vraag } from "@/lib/enquete";
-import BevestigKnop from "@/components/BevestigKnop";
 
-/** Losse reacties bekijken en verwijderen, en in één keer alle reacties wissen. */
-export default function ReactiesBeheer({
-  surveyId,
-  vragen,
-  reacties,
-  totaalAlle,
-}: {
-  surveyId: string;
-  vragen: Vraag[];
-  reacties: Reactie[];
-  /** aantal reacties zonder filter, voor de knop 'alles wissen' */
-  totaalAlle: number;
-}) {
-  const supabase = createClient();
-  const router = useRouter();
+/** Losse reacties bekijken: per reactie uitklappen om alle antwoorden te lezen. Alleen lezen. */
+export default function ReactiesBeheer({ vragen, reacties }: { vragen: Vraag[]; reacties: Reactie[] }) {
   const [open, setOpen] = useState<string | null>(null);
-  const [bezig, setBezig] = useState<string | null>(null);
-  const [weg, setWeg] = useState<Set<string>>(new Set());
-  const [fout, setFout] = useState("");
   const nummers = vraagNummers(vragen);
-  const zichtbaar = reacties.filter((r) => !weg.has(r.id));
-
-  async function verwijder(r: Reactie) {
-    setBezig(r.id);
-    setFout("");
-    const { error } = await supabase.from("pws_survey_responses").delete().eq("id", r.id);
-    setBezig(null);
-    if (error) {
-      setFout("Verwijderen lukte niet. Probeer het opnieuw.");
-      return;
-    }
-    setWeg((w) => new Set(w).add(r.id));
-    router.refresh();
-  }
-
-  async function allesWissen() {
-    setBezig("alles");
-    setFout("");
-    const { error } = await supabase.from("pws_survey_responses").delete().eq("survey_id", surveyId);
-    setBezig(null);
-    if (error) {
-      setFout("Verwijderen lukte niet. Probeer het opnieuw.");
-      return;
-    }
-    router.refresh();
-  }
 
   function weergave(v: Vraag, waarde: string) {
     if (v.type === "schaal" || v.type === "stellingen") {
@@ -66,24 +21,10 @@ export default function ReactiesBeheer({
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-slate-900">Losse reacties ({zichtbaar.length})</h3>
-        {totaalAlle > 0 && (
-          <BevestigKnop
-            vraag={`Alle ${totaalAlle} reacties definitief wissen?`}
-            bevestig="Ja, alles wissen"
-            onBevestig={allesWissen}
-            disabled={bezig !== null}
-            className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
-          >
-            Alle {totaalAlle} reacties wissen
-          </BevestigKnop>
-        )}
-      </div>
-      {fout && <p role="alert" className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{fout}</p>}
+      <h3 className="text-sm font-semibold text-slate-900">Losse reacties ({reacties.length})</h3>
 
       <ul className="mt-3 divide-y divide-slate-100">
-        {zichtbaar.map((r) => {
+        {reacties.map((r) => {
           const nr = reacties.indexOf(r) + 1;
           const uitgeklapt = open === r.id;
           return (
@@ -98,16 +39,6 @@ export default function ReactiesBeheer({
                   <span className="font-medium">Reactie {nr}</span>
                   <span className="truncate text-slate-500">· {datum(r.created_at)} · {r.answers.length} antwoorden</span>
                 </button>
-                <BevestigKnop
-                  vraag="Verwijderen?"
-                  bevestig="Ja"
-                  onBevestig={() => verwijder(r)}
-                  disabled={bezig !== null}
-                  ariaLabel={`Reactie ${nr} verwijderen`}
-                  className="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 text-sm text-slate-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                >
-                  Verwijderen
-                </BevestigKnop>
               </div>
               {uitgeklapt && (
                 <dl className="mt-2 space-y-1.5 rounded-xl bg-slate-50 p-3 text-sm">
