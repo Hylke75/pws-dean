@@ -122,9 +122,16 @@ export default function EnqueteBouwer({
     router.refresh();
   }
 
+  async function enqueteVerwijderen() {
+    if (!confirm(`De enquête "${title}" met alle vragen en ${responseCount} reacties definitief verwijderen?`)) return;
+    await supabase.from("pws_surveys").delete().eq("id", survey.id);
+    router.push("/enquetes");
+    router.refresh();
+  }
+
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const shareUrl = `${origin}${vasteSlug ? `/e/${vasteSlug}` : `/enquete/${survey.share_token}`}`;
-  const deelTekst = `Wil je mijn korte enquête voor mijn profielwerkstuk invullen? Het duurt ongeveer 4 minuten en is anoniem. ${shareUrl}`;
+  const deelTekst = `Wil je mijn korte enquête voor mijn profielwerkstuk invullen? Het duurt maar een paar minuten en is anoniem. ${shareUrl}`;
 
   function kopieer(tekst: string) {
     navigator.clipboard.writeText(tekst);
@@ -244,15 +251,20 @@ export default function EnqueteBouwer({
             </div>
           </div>
 
-          {responseCount > 0 && (
-            <div className="rounded-2xl border border-red-100 bg-white p-4">
-              <p className="text-sm font-medium text-slate-800">Testreacties opruimen</p>
-              <p className="mb-2 text-xs text-slate-500">Zelf getest? Wis alle reacties voordat je de link echt deelt.</p>
-              <button onClick={reactiesWissen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
-                Alle {responseCount} reacties wissen
+          <div className="rounded-2xl border border-red-100 bg-white p-4">
+            <p className="text-sm font-medium text-slate-800">Opruimen</p>
+            <p className="mb-2 text-xs text-slate-500">Zelf getest? Wis alle reacties voordat je de link echt deelt.</p>
+            <div className="flex flex-wrap gap-2">
+              {responseCount > 0 && (
+                <button onClick={reactiesWissen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
+                  Alle {responseCount} reacties wissen
+                </button>
+              )}
+              <button onClick={enqueteVerwijderen} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
+                Enquête verwijderen
               </button>
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -343,6 +355,12 @@ export default function EnqueteBouwer({
                       </div>
                     </div>
 
+                    {q.config.toonAls && (
+                      <p className="mt-2 text-xs text-slate-500">
+                        Alleen getoond als vraag {questions.findIndex((x) => x.id === q.config.toonAls!.vraag) + 1} is:{" "}
+                        <strong>{q.config.toonAls.waarden.join(" / ")}</strong>
+                      </p>
+                    )}
                     {(q.type === "meerkeuze" || q.type === "meerdere") && !q.config.groepen?.length && (
                       <OptionsEditor
                         options={q.options}

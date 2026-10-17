@@ -90,11 +90,13 @@ export function VerdelingRij({
   verdeling,
   labels,
   kleurStip,
+  weetNietLabel,
 }: {
   label: string;
   verdeling: Verdeling;
   labels: string[];
   kleurStip?: string;
+  weetNietLabel?: string;
 }) {
   return (
     <div>
@@ -105,7 +107,7 @@ export function VerdelingRij({
         </span>
         <span className="shrink-0 tabular-nums text-slate-500">
           gem. <span className="font-semibold text-slate-800">{fmt(verdeling.gemiddelde)}</span>
-          {verdeling.weetNiet > 0 && <> · {verdeling.weetNiet}× weet niet</>}
+          {verdeling.weetNiet > 0 && <> · {verdeling.weetNiet}× {(weetNietLabel || "weet niet").toLowerCase()}</>}
         </span>
       </div>
       <div className="mt-1">

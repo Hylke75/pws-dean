@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  ANDERS,
   WEET_NIET,
+  aantalZichtbaar,
+  andersSleutel,
   labelsVoor,
   naarIndienen,
   opschonen,
@@ -82,7 +85,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const lijst = useMemo(() => (survey ? stappen(survey.questions) : []), [survey]);
+  const lijst = useMemo(() => (survey ? stappen(survey.questions, antwoorden) : []), [survey, antwoorden]);
   const huidig: Stap | undefined = lijst[Math.min(stap, lijst.length - 1)];
   const laatste = stap >= lijst.length - 1;
 
@@ -109,9 +112,9 @@ export default function EnqueteInvullen({ token }: { token: string }) {
   }
 
   /** Eén keuze tikken = antwoord geven én door naar de volgende vraag. */
-  function kiesEnDoor(key: string, waarde: string) {
+  function kiesEnDoor(key: string, waarde: string, blijf = false) {
     zet(key, [waarde]);
-    if (laatste) return;
+    if (laatste || blijf) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setStap((s) => s + 1), 280);
   }
@@ -184,9 +187,10 @@ export default function EnqueteInvullen({ token }: { token: string }) {
             <h1 className="mt-2 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">{survey.title}</h1>
             {survey.intro && <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-slate-700">{survey.intro}</p>}
             <ul className="mt-6 space-y-2 text-slate-600">
-              <li className="flex gap-2"><span aria-hidden>⏱</span> Ongeveer 4 minuten</li>
-              <li className="flex gap-2"><span aria-hidden>🔒</span> Anoniem, je naam wordt niet gevraagd</li>
-              <li className="flex gap-2"><span aria-hidden>👆</span> Tik op je antwoord, je gaat vanzelf door</li>
+                            <li className="flex gap-2"><span aria-hidden>🔒</span> Anoniem: er wordt geen naam gevraagd</li>
+              {survey.questions.some((q) => q.type !== "open") && (
+                <li className="flex gap-2"><span aria-hidden>👆</span> Tik op een antwoord om door te gaan</li>
+              )}
             </ul>
           </div>
           <div className="sticky bottom-0 bg-slate-50 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
@@ -216,7 +220,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
         {/* Voortgang */}
         <div className="sticky top-0 z-10 -mx-4 bg-slate-50/95 px-4 pb-3 pt-3 backdrop-blur">
           <div className="flex items-center justify-between text-sm text-slate-500">
-            <span>Vraag {nr} van {survey.questions.length}</span>
+            <span>Vraag {nr} van {aantalZichtbaar(survey.questions, antwoorden)}</span>
             <span>{voortgang}%</span>
           </div>
           <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={voortgang} aria-valuemin={0} aria-valuemax={100}>
@@ -232,7 +236,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
           {vraag.type === "stellingen" && item !== undefined ? (
             <>
               <p className="text-base text-slate-500">
-                {vraag.text} · stelling {item + 1} van {vraag.config.items?.length}
+                {vraag.text} <span className="whitespace-nowrap">· {item + 1} van {vraag.config.items?.length}</span>
               </p>
               <h2 className="mt-2 text-xl font-semibold leading-snug text-slate-900">{vraag.config.items?.[item]}</h2>
             </>
@@ -254,10 +258,18 @@ export default function EnqueteInvullen({ token }: { token: string }) {
             {(vraag.type === "meerkeuze" || vraag.type === "janee") && (
               <div className="space-y-2">
                 {optiesVoor(vraag, antwoorden).map((opt) => (
-                  <Keuze key={opt} rond actief={gekozen[0] === opt} onClick={() => kiesEnDoor(key, opt)}>
+                  <Keuze
+                    key={opt}
+                    rond
+                    actief={gekozen[0] === opt}
+                    onClick={() => kiesEnDoor(key, opt, opt === ANDERS && !!vraag.config.andersTekst)}
+                  >
                     {opt}
                   </Keuze>
                 ))}
+                {vraag.config.andersTekst && gekozen.includes(ANDERS) && (
+                  <AndersVeld waarde={antwoorden[andersSleutel(vraag.id)]?.[0] ?? ""} onChange={(t) => zet(andersSleutel(vraag.id), [t])} />
+                )}
               </div>
             )}
 
@@ -272,6 +284,9 @@ export default function EnqueteInvullen({ token }: { token: string }) {
                     </Keuze>
                   );
                 })}
+                {vraag.config.andersTekst && gekozen.includes(ANDERS) && (
+                  <AndersVeld waarde={antwoorden[andersSleutel(vraag.id)]?.[0] ?? ""} onChange={(t) => zet(andersSleutel(vraag.id), [t])} />
+                )}
               </div>
             )}
 
@@ -293,7 +308,7 @@ export default function EnqueteInvullen({ token }: { token: string }) {
                         : "border-dashed border-slate-300 text-slate-500 active:bg-slate-100"
                     }`}
                   >
-                    Weet ik niet
+                    {vraag.config.weetNietLabel || "Weet ik niet"}
                   </button>
                 )}
               </div>
@@ -305,8 +320,8 @@ export default function EnqueteInvullen({ token }: { token: string }) {
                   value={gekozen[0] ?? ""}
                   onChange={(e) => zet(key, [e.target.value])}
                   maxLength={vraag.config.maxLengte ?? 2000}
-                  rows={4}
-                  placeholder="Typ hier je antwoord (1 à 2 zinnen)…"
+                  rows={(vraag.config.maxLengte ?? 2000) > 300 ? 6 : 4}
+                  placeholder="Antwoord…"
                   className="w-full resize-none rounded-2xl border border-slate-300 bg-white p-4 text-base leading-relaxed outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                 />
                 {vraag.config.maxLengte && (
@@ -347,12 +362,31 @@ export default function EnqueteInvullen({ token }: { token: string }) {
               disabled={vraag.required && !beantwoord}
               className="h-14 flex-1 rounded-2xl bg-emerald-600 text-lg font-semibold text-white shadow-sm active:bg-emerald-700 disabled:bg-slate-300 disabled:text-slate-500"
             >
-              {vraag.required && !beantwoord ? "Kies een antwoord" : "Volgende"}
+              {beantwoord ? "Volgende" : vraag.required ? "Kies een antwoord" : "Overslaan"}
             </button>
           )}
         </div>
       </div>
     </Scherm>
+  );
+}
+
+function AndersVeld({ waarde, onChange }: { waarde: string; onChange: (t: string) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    ref.current?.focus({ preventScroll: true });
+    ref.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, []);
+  return (
+    <input
+      ref={ref}
+      value={waarde}
+      onChange={(e) => onChange(e.target.value)}
+      maxLength={200}
+      placeholder="Namelijk…"
+      aria-label="Anders, namelijk"
+      className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-base outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+    />
   );
 }
 

@@ -33,11 +33,14 @@ export default async function VergelijkPage() {
     .from("pws_surveys")
     .select("*")
     .not("slug", "is", null)
-    .order("created_at")
-    .limit(GROEP_KLEUREN.length);
+    .order("created_at");
+
+  const volgorde = ["leerlingen", "docenten", "werkenden"];
+  const plek = (s: Survey) => (volgorde.indexOf(s.slug ?? "") + 1 || volgorde.length + 1);
+  const gekozen = ((surveys as Survey[]) ?? []).sort((a, b) => plek(a) - plek(b)).slice(0, GROEP_KLEUREN.length);
 
   const groepen: Groep[] = await Promise.all(
-    ((surveys as Survey[]) ?? []).map(async (s, i) => {
+    gekozen.map(async (s, i) => {
       const [{ data: vragen }, { data: reacties }] = await Promise.all([
         supabase.from("pws_survey_questions").select("*").eq("survey_id", s.id).order("order_index"),
         supabase.rpc("pws_enquete_resultaten", { p_survey_id: s.id }),
@@ -139,7 +142,8 @@ function Vergelijking({ per }: { per: { g: Groep; v: Vraag }[] }) {
 
   // Keuzevragen: per optie een staaf per groep.
   const tellingen = per.map(({ g, v }) => ({ g, ...telKeuzes(v, g.reacties) }));
-  const opties = alleOpties(eerste);
+  const opties: string[] = [];
+  for (const { v } of per) for (const o of alleOpties(v)) if (!opties.includes(o)) opties.push(o);
   return (
     <div className="space-y-3">
       {opties.map((o) => (

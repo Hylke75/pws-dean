@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  andersTeksten,
   naarCsv,
   naarIndienen,
   opschonen,
@@ -127,5 +128,30 @@ describe("resultaten", () => {
     expect(csv).toHaveLength(4);
     expect(csv[0]).toContain('"2.1 a"');
     expect(csv[1]).toContain('"Uitleg; Ideeën"');
+  });
+});
+
+describe("vervolgvraag en anders", () => {
+  const keuze = v("keuze", { options: ["Zeker niet", "Misschien", "Zeker wel"] });
+  const welke = v("welke", { type: "open", required: false, config: { toonAls: { vraag: "keuze", waarden: ["Misschien", "Zeker wel"] } } });
+  const onderwerp = v("ond", { type: "meerdere", options: ["AI gebruiken", "Anders"], config: { max: 3, andersTekst: true } });
+
+  it("toont de vervolgvraag alleen bij de juiste antwoorden", () => {
+    expect(stappen([keuze, welke, onderwerp], { keuze: ["Zeker niet"] }).map((s) => [s.vraag.id, s.nr])).toEqual([
+      ["keuze", 1],
+      ["ond", 2],
+    ]);
+    expect(stappen([keuze, welke, onderwerp], { keuze: ["Misschien"] }).map((s) => s.vraag.id)).toEqual(["keuze", "welke", "ond"]);
+  });
+  it("verstuurt geen antwoord op een verborgen vraag", () => {
+    const a = opschonen([keuze, welke], { keuze: ["Zeker niet"], welke: ["Wiskunde D"] });
+    expect(naarIndienen([keuze, welke], a)).toEqual([{ question_id: "keuze", value: "Zeker niet" }]);
+  });
+  it("voegt de eigen tekst bij Anders toe en telt die als Anders", () => {
+    const uit = naarIndienen([onderwerp], { ond: ["AI gebruiken", "Anders"], "ond#anders": ["Filosofie"] });
+    expect(uit.map((x) => x.value)).toEqual(["AI gebruiken", "Anders: Filosofie"]);
+    const r: Reactie[] = [{ id: "1", created_at: "2026-10-17T10:00:00Z", answers: uit.map((x) => ({ q: x.question_id, i: null, v: x.value })) }];
+    expect(telKeuzes(onderwerp, r).tellingen.find((t) => t.waarde === "Anders")?.n).toBe(1);
+    expect(andersTeksten(onderwerp, r)).toEqual(["Filosofie"]);
   });
 });

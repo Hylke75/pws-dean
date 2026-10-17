@@ -1,6 +1,8 @@
 import type { QuestionConfig, QuestionType } from "./types";
 
 export const WEET_NIET = "weet ik niet";
+export const ANDERS = "Anders";
+const ANDERS_PREFIX = "Anders: ";
 export const SCHAAL_WAARDEN = ["1", "2", "3", "4", "5"];
 export const STANDAARD_LABELS = ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"];
 
@@ -19,6 +21,17 @@ export type Antwoorden = Record<string, string[]>;
 
 export function sleutel(qid: string, item?: number) {
   return item === undefined ? qid : `${qid}:${item}`;
+}
+
+/** Sleutel voor de eigen tekst bij "Anders". */
+export function andersSleutel(qid: string) {
+  return `${qid}#anders`;
+}
+
+export function zichtbaar(v: Vraag, antwoorden: Antwoorden): boolean {
+  const t = v.config.toonAls;
+  if (!t) return true;
+  return (antwoorden[t.vraag] ?? []).some((x) => t.waarden.includes(x));
 }
 
 export function labelsVoor(v: Vraag): string[] {
@@ -45,17 +58,24 @@ export function optiesVoor(v: Vraag, antwoorden: Antwoorden): string[] {
 
 export type Stap = { vraag: Vraag; nr: number; item?: number };
 
-/** Eén stap per vraag; een stellingenblok krijgt één stap per stelling. */
-export function stappen(vragen: Vraag[]): Stap[] {
+/** Eén stap per zichtbare vraag; een stellingenblok krijgt één stap per stelling. */
+export function stappen(vragen: Vraag[], antwoorden: Antwoorden = {}): Stap[] {
   const uit: Stap[] = [];
-  vragen.forEach((vraag, i) => {
+  let nr = 0;
+  for (const vraag of vragen) {
+    if (!zichtbaar(vraag, antwoorden)) continue;
+    nr++;
     if (vraag.type === "stellingen") {
-      (vraag.config.items ?? []).forEach((_, item) => uit.push({ vraag, nr: i + 1, item }));
+      (vraag.config.items ?? []).forEach((_, item) => uit.push({ vraag, nr, item }));
     } else {
-      uit.push({ vraag, nr: i + 1 });
+      uit.push({ vraag, nr });
     }
-  });
+  }
   return uit;
+}
+
+export function aantalZichtbaar(vragen: Vraag[], antwoorden: Antwoorden) {
+  return vragen.filter((v) => zichtbaar(v, antwoorden)).length;
 }
 
 export function stapBeantwoord(stap: Stap, antwoorden: Antwoorden): boolean {
@@ -77,7 +97,12 @@ export function wisselKeuze(huidig: string[], optie: string, config: QuestionCon
 export function opschonen(vragen: Vraag[], antwoorden: Antwoorden): Antwoorden {
   const uit: Antwoorden = { ...antwoorden };
   for (const v of vragen) {
+    if (!zichtbaar(v, uit)) {
+      for (const k of Object.keys(uit)) if (k === v.id || k.startsWith(`${v.id}:`) || k === andersSleutel(v.id)) delete uit[k];
+      continue;
+    }
     if (v.type !== "meerkeuze" && v.type !== "meerdere") continue;
+    if (!uit[v.id]?.includes(ANDERS)) delete uit[andersSleutel(v.id)];
     const mag = optiesVoor(v, uit);
     if (uit[v.id]) uit[v.id] = uit[v.id].filter((x) => mag.includes(x));
   }
@@ -88,9 +113,11 @@ export type IndienAntwoord = { question_id: string; value: string; item?: number
 
 export function naarIndienen(vragen: Vraag[], antwoorden: Antwoorden): IndienAntwoord[] {
   const uit: IndienAntwoord[] = [];
-  for (const s of stappen(vragen)) {
-    for (const value of antwoorden[sleutel(s.vraag.id, s.item)] ?? []) {
+  for (const s of stappen(vragen, antwoorden)) {
+    const eigen = (antwoorden[andersSleutel(s.vraag.id)]?.[0] ?? "").trim();
+    for (let value of antwoorden[sleutel(s.vraag.id, s.item)] ?? []) {
       if (!value.trim()) continue;
+      if (value === ANDERS && s.vraag.config.andersTekst && eigen) value = ANDERS_PREFIX + eigen.slice(0, 200);
       uit.push(s.item === undefined ? { question_id: s.vraag.id, value } : { question_id: s.vraag.id, value, item: s.item });
     }
   }
@@ -109,6 +136,19 @@ function waarden(r: Reactie, qid: string, item?: number) {
   return r.answers.filter((a) => a.q === qid && (item === undefined ? a.i === null : a.i === item)).map((a) => a.v);
 }
 
+/** "Anders: tekst" telt mee als "Anders". */
+function basisWaarde(w: string) {
+  return w.startsWith(ANDERS_PREFIX) ? ANDERS : w;
+}
+
+/** De zelf getypte teksten bij "Anders". */
+export function andersTeksten(v: Vraag, reacties: Reactie[]): string[] {
+  return reacties
+    .flatMap((r) => waarden(r, v.id))
+    .filter((w) => w.startsWith(ANDERS_PREFIX))
+    .map((w) => w.slice(ANDERS_PREFIX.length));
+}
+
 export type Telling = { waarde: string; n: number };
 
 /** Per optie het aantal invullers dat hem koos, plus het aantal invullers dat de vraag beantwoordde. */
@@ -117,7 +157,7 @@ export function telKeuzes(v: Vraag, reacties: Reactie[]): { tellingen: Telling[]
   const n: Record<string, number> = Object.fromEntries(opties.map((o) => [o, 0]));
   let beantwoord = 0;
   for (const r of reacties) {
-    const w = new Set(waarden(r, v.id));
+    const w = new Set(waarden(r, v.id).map(basisWaarde));
     if (w.size) beantwoord++;
     for (const x of w) n[x] = (n[x] ?? 0) + 1;
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  andersTeksten,
   labelsVoor,
   naarCsv,
   openAntwoorden,
@@ -107,7 +108,7 @@ function VraagResultaat({ vraag, reacties }: { vraag: Vraag; reacties: Reactie[]
     const d = schaalVerdeling(vraag, reacties);
     return (
       <div className="space-y-3">
-        <VerdelingRij label={`n = ${d.n}`} verdeling={d} labels={labels} />
+        <VerdelingRij label={`n = ${d.n}`} verdeling={d} labels={labels} weetNietLabel={vraag.config.weetNietLabel} />
         <SchaalLegenda labels={labels} />
       </div>
     );
@@ -126,6 +127,7 @@ function VraagResultaat({ vraag, reacties }: { vraag: Vraag; reacties: Reactie[]
   }
 
   const { tellingen, beantwoord } = telKeuzes(vraag, reacties);
+  const eigen = andersTeksten(vraag, reacties);
   return (
     <>
       <p className="mb-2 text-xs text-slate-500">
@@ -133,6 +135,12 @@ function VraagResultaat({ vraag, reacties }: { vraag: Vraag; reacties: Reactie[]
         {vraag.type === "meerdere" && " · meerdere antwoorden mogelijk, percentage van invullers"}
       </p>
       <Staven tellingen={tellingen} totaal={beantwoord} sorteer={vraag.type === "meerdere"} />
+      {eigen.length > 0 && (
+        <div className="mt-3">
+          <p className="text-xs text-slate-500">Bij &quot;Anders&quot; ingevuld:</p>
+          <p className="mt-1 text-sm text-slate-700">{eigen.join(" · ")}</p>
+        </div>
+      )}
     </>
   );
 }

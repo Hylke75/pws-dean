@@ -129,6 +129,8 @@ export type QuestionConfig = {
   labels?: string[];
   /** schaal/stellingen: extra knop "Weet ik niet" */
   weetNiet?: boolean;
+  /** schaal/stellingen: andere tekst voor die extra knop */
+  weetNietLabel?: string;
   /** stellingen: de stellingen zelf */
   items?: string[];
   /** stellingen: korte namen voor grafieken */
@@ -138,6 +140,10 @@ export type QuestionConfig = {
   /** meerkeuze: opties hangen af van het antwoord op een eerdere vraag */
   afhankelijkVan?: string;
   groepen?: { als: string[]; opties: string[] }[];
+  /** meerdere/meerkeuze: bij "Anders" mag de invuller zelf iets typen */
+  andersTekst?: boolean;
+  /** vraag alleen tonen bij bepaalde antwoorden op een eerdere vraag */
+  toonAls?: { vraag: string; waarden: string[] };
   /** sleutel om dezelfde vraag over enquêtes heen te vergelijken */
   vergelijk?: string;
 };
