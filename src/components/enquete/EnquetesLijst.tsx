@@ -61,10 +61,10 @@ export default function EnquetesLijst({ initial, counts }: { initial: Survey[]; 
       ) : (
         <ul className="space-y-2">
           {items.map((s) => (
-            <li key={s.id}>
+            <li key={s.id} className="flex items-stretch gap-2">
               <Link
                 href={`/enquetes/${s.id}`}
-                className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition hover:border-emerald-300 hover:shadow-sm"
+                className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition hover:border-emerald-300 hover:shadow-sm"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-slate-900">{s.title}</p>
@@ -77,6 +77,18 @@ export default function EnquetesLijst({ initial, counts }: { initial: Survey[]; 
                   {STATUS_LABEL[s.status]}
                 </span>
               </Link>
+              {(counts[s.id] ?? 0) > 0 && (
+                <a
+                  href={`/api/enquetes/${s.id}/download`}
+                  download
+                  title="Download alle reacties als CSV (opent in Excel)"
+                  aria-label={`Download de reacties van ${s.title}`}
+                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 transition hover:border-emerald-300 hover:text-emerald-700"
+                >
+                  <span aria-hidden>⬇</span>
+                  <span className="hidden sm:inline">Download</span>
+                </a>
+              )}
             </li>
           ))}
         </ul>
