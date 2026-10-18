@@ -1,3 +1,4 @@
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendMail, shell } from "@/lib/email";
@@ -22,8 +23,8 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
   );
 
   const { data, error } = await supabase.rpc("pws_run_reminders");
