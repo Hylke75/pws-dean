@@ -26,7 +26,7 @@ export const FASE_VELDEN: Record<number, Veld[]> = {
     { key: "onderwerp", label: "Mijn onderwerp", type: "kort", placeholder: "Bijv. De invloed van social media op slaap bij tieners", voorbeeld: "Goed afgebakend: 'De invloed van social media in het uur voor het slapengaan op de slaapkwaliteit van 15–17-jarigen.'" },
     { key: "afbakening", label: "Afbakening", type: "lang", placeholder: "Wat onderzoek je wel en wat niet? Welke doelgroep, periode of context?", hint: "Een algemeen onderwerp ('het klimaat') is geen PWS — maak het smal en concreet." },
     { key: "vak", label: "Bij welk vak / begeleider past dit?", type: "kort", placeholder: "Bijv. biologie, of maatschappijleer" },
-    { key: "haalbaar", label: "Is dit haalbaar in ~80 uur?", type: "lang", placeholder: "Waarom is dit te doen binnen de tijd en met jouw mogelijkheden?" },
+    { key: "haalbaar", label: "Is dit haalbaar in ~40 uur?", type: "lang", placeholder: "Waarom is dit te doen binnen de tijd en met jouw mogelijkheden?" },
     { key: "waarom", label: "Waarom dit onderwerp?", type: "lang", placeholder: "Wat maakt dit interessant of relevant om te onderzoeken?" },
   ],
   2: [
@@ -97,7 +97,7 @@ export const FASE_HULP: Record<number, FaseHulp> = {
     aanpak: [
       "Schrijf 2–3 dingen op die je écht interesseren.",
       "Maak er een concrete, smalle vraag van (niet 'het klimaat' maar 'wat…').",
-      "Check of het haalbaar is in ~80 uur met de middelen die je hebt.",
+      "Check of het haalbaar is in ~40 uur met de middelen die je hebt.",
       "Bedenk bij welk vak/begeleider het past en leg het voor.",
     ],
     letOp: ["Een te breed onderwerp is de meest gemaakte fout.", "Je hoeft geen Nobelprijs te winnen — laat zien wat je kunt op examenniveau."],
@@ -182,7 +182,7 @@ export const FASE_HULP: Record<number, FaseHulp> = {
     aanpak: ["Verbeter tekst en structuur.", "Loop de bronvermelding (APA) na.", "Verwerk afbeeldingen, grafieken en bijlagen netjes."],
   },
   18: {
-    aanpak: ["Maak je logboek compleet (minimaal 80 uur).", "Bespreek de laatste versie nog één keer met je begeleider."],
+    aanpak: ["Maak je logboek compleet (minimaal 40 uur).", "Bespreek de laatste versie nog één keer met je begeleider."],
     letOp: ["Het logboek moet tijdens het PWS zijn bijgehouden, niet achteraf."],
   },
   19: {

@@ -22,6 +22,6 @@ export const VERSLAG_SECTIES: VerslagSectieConfig[] = [
   { key: "conclusie", title: "Conclusie", description: "Het antwoord op je hoofd- en deelvragen, onderbouwd met je eigen resultaten én de literatuur.", bron: "Fase 10" },
   { key: "discussie", title: "Discussie & reflectie", description: "Betrouwbaarheid, beperkingen, wat je anders zou doen en vervolgonderzoek.", bron: "Fase 11" },
   { key: "bronnenlijst", title: "Bronnenlijst", description: "Alle gebruikte bronnen in APA-stijl, op alfabetische volgorde.", bron: "Bronnen" },
-  { key: "logboek", title: "Logboek", description: "Je complete logboek met minimaal 80 uur, bijgehouden tijdens het werk (niet achteraf).", bron: "Logboek" },
+  { key: "logboek", title: "Logboek", description: "Je complete logboek met minimaal 40 uur, bijgehouden tijdens het werk (niet achteraf).", bron: "Logboek" },
   { key: "bijlagen", title: "Bijlagen", description: "Je meetinstrument (enquête/interviewvragen), ruwe data, uitwerkingen en overige documenten.", bron: "Enquête & Bijlagen per fase" },
 ];
