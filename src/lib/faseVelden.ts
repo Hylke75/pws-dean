@@ -51,39 +51,27 @@ export const FASE_VELDEN: Record<number, Veld[]> = {
   7: [
     { key: "ordening", label: "Ordening van resultaten", type: "lang", placeholder: "Hoe heb je je resultaten geordend (tabel, categorieën, per vraag)?" },
     { key: "eerste_analyse", label: "Eerste analyse", type: "lang", placeholder: "Wat valt je op in de eerste resultaten?" },
-  ],
-  8: [
     { key: "patronen", label: "Patronen en verschillen", type: "lang", placeholder: "Welke patronen, verschillen of opvallende resultaten zie je?" },
     { key: "visualisaties", label: "Grafieken / visualisaties", type: "lang", placeholder: "Welke grafieken heb je gemaakt en wat laten ze zien? (afbeeldingen als bijlage)", hint: "Bij een enquête staan de grafieken al klaar in het tabblad 'Enquête' → Resultaten." },
   ],
-  9: [
+  8: [
     { key: "antwoorden", label: "Antwoorden op de deelvragen", type: "lang", placeholder: "Beantwoord per deelvraag, en combineer je eigen resultaten met wat je bronnen zeggen." },
-  ],
-  10: [
     { key: "antwoord_hoofdvraag", label: "Antwoord op de hoofdvraag", type: "lang", placeholder: "Het onderbouwde antwoord op je hoofdvraag." },
     { key: "conclusie", label: "Conclusie", type: "lang", placeholder: "Je conclusie, die logisch volgt uit de deelvragen." },
-  ],
-  11: [
     { key: "betrouwbaarheid", label: "Betrouwbaarheid", type: "lang", placeholder: "Hoe betrouwbaar is je onderzoek? Denk aan aantal respondenten, meetfouten, toeval." },
     { key: "beperkingen", label: "Beperkingen", type: "lang", placeholder: "Wat waren de beperkingen? Wat had je anders kunnen doen?" },
     { key: "vervolg", label: "Vervolgonderzoek", type: "lang", placeholder: "Welk vervolgonderzoek zou interessant zijn?" },
   ],
-  12: [
+  9: [
     { key: "stand", label: "Stand van zaken", type: "lang", placeholder: "Welke onderdelen zijn af? Voeg je complete versie als bijlage toe." },
-  ],
-  13: [
     { key: "feedbackvraag", label: "Waar wil je feedback op?", type: "lang", placeholder: "Op welke onderdelen wil je gerichte feedback van je begeleider?" },
-  ],
-  14: [
     { key: "verwerkt", label: "Wat heb je aangepast?", type: "lang", placeholder: "Welke feedback heb je verwerkt en hoe?" },
   ],
-  16: [
+  10: [
     { key: "samenhang", label: "Controle op samenhang", type: "lang", placeholder: "Sluiten hoofdvraag, onderzoek, resultaten en conclusie logisch op elkaar aan?" },
-  ],
-  17: [
     { key: "afwerking", label: "Afwerking", type: "lang", placeholder: "Wat heb je verbeterd aan tekst, structuur, bronvermelding en bijlagen?" },
   ],
-  22: [
+  12: [
     { key: "wat_weten", label: "Wat wilde ik weten?", type: "lang", placeholder: "In één of twee zinnen." },
     { key: "hoe_onderzocht", label: "Hoe heb ik het onderzocht?", type: "lang" },
     { key: "wat_ontdekt", label: "Wat heb ik ontdekt?", type: "lang" },
@@ -139,64 +127,31 @@ export const FASE_HULP: Record<number, FaseHulp> = {
     ],
     letOp: ["Stel geen sturende vragen.", "Zorg dat je met de antwoorden je deelvraag ook echt kunt beantwoorden."],
   },
-  10: {
-    aanpak: ["Geef een onderbouwd antwoord op de hoofdvraag.", "Zorg dat je conclusie volgt uit je deelvragen — geen nieuwe informatie."],
-    letOp: ["De conclusie is een antwoord, geen samenvatting."],
-  },
   6: {
     aanpak: ["Neem je enquête af / houd je interviews / voer je experiment uit.", "Verzamel genoeg data (denk aan voldoende respondenten of metingen).", "Bewaar alle ruwe gegevens meteen goed."],
     letOp: ["Noteer precies hoeveel mensen of metingen je hebt — dat heb je nodig bij je methode en betrouwbaarheid."],
   },
   7: {
-    aanpak: ["Zet je resultaten overzichtelijk neer (tabel of categorieën).", "Maak een eerste analyse: wat springt eruit?", "Breng alles wat je al hebt samen tot één concept."],
-    letOp: ["Doel van school: eind oktober is ongeveer 50–75% af."],
-  },
-  8: {
-    aanpak: ["Zoek patronen, verschillen en opvallende uitkomsten.", "Maak grafieken of tabellen waar dat helpt.", "Koppel elke analyse aan een deelvraag."],
+    aanpak: ["Zet je resultaten overzichtelijk neer (tabel of categorieën) en maak een eerste analyse.", "Zoek patronen, verschillen en opvallende uitkomsten en maak grafieken waar dat helpt.", "Koppel elke analyse aan een deelvraag."],
     letOp: ["Beschrijf in de tekst wat een grafiek laat zien — laat 'm niet voor zichzelf spreken."],
   },
+  8: {
+    aanpak: ["Beantwoord elke deelvraag apart en combineer je eigen resultaten met wat je bronnen zeggen.", "Geef een onderbouwd antwoord op de hoofdvraag: de conclusie volgt uit je deelvragen.", "Schrijf de discussie: hoe betrouwbaar is je onderzoek, wat zijn de beperkingen en welk vervolgonderzoek is interessant?"],
+    letOp: ["De conclusie is een antwoord, geen samenvatting. Zet er geen nieuwe informatie in."],
+  },
   9: {
-    aanpak: ["Beantwoord elke deelvraag apart.", "Combineer je eigen resultaten met wat je bronnen zeggen."],
-    letOp: ["Een deelvraag beantwoorden is een onderbouwd antwoord geven, niet alleen data herhalen."],
+    aanpak: ["Voeg alle onderdelen samen tot één complete versie: inleiding, theorie, methode, resultaten, analyse, conclusie en discussie.", "Lever die op tijd in bij je begeleider en vraag gericht om feedback.", "Loop de opmerkingen punt voor punt langs en verwerk ze."],
+    letOp: ["Het hoeft nog niet perfect, wel compleet. Noteer wat je hebt aangepast."],
   },
-  12: {
-    aanpak: ["Voeg alle onderdelen samen: inleiding, theorie, methode, resultaten, analyse, conclusie en discussie.", "Zorg voor een rode draad: vraag → onderzoek → antwoord."],
-    letOp: ["Het hoeft nog niet perfect — het moet compleet zijn."],
+  10: {
+    aanpak: ["Check of hoofdvraag, onderzoek, resultaten en conclusie op elkaar aansluiten.", "Verbeter tekst en structuur, loop de bronvermelding (APA) en de bijlagen na.", "Maak je logboek compleet (minimaal 40 uur) en maak het definitieve bestand."],
+    letOp: ["Op 23 december is alles af. Daarna verander je niets groots meer."],
   },
-  13: {
-    aanpak: ["Lever je complete versie op tijd in bij je begeleider.", "Vraag gericht: op welke onderdelen wil je feedback?"],
-    letOp: ["Hoe concreter je vraag, hoe bruikbaarder de feedback."],
-  },
-  14: {
-    aanpak: ["Loop de opmerkingen punt voor punt langs.", "Verbeter of vul aan wat nog onvoldoende was."],
-    letOp: ["Noteer wat je hebt aangepast — handig voor je reflectie."],
-  },
-  15: {
-    aanpak: ["Werk eventuele achterstanden weg.", "Vul ontbrekende bronnen, gegevens of teksten aan."],
-    letOp: ["Plan hier geen grote nieuwe onderdelen; het is een buffer."],
-  },
-  16: {
-    aanpak: ["Loop het hele onderzoek nog eens kritisch door.", "Check of hoofdvraag, onderzoek, resultaten en conclusie op elkaar aansluiten."],
-  },
-  17: {
-    aanpak: ["Verbeter tekst en structuur.", "Loop de bronvermelding (APA) na.", "Verwerk afbeeldingen, grafieken en bijlagen netjes."],
-  },
-  18: {
-    aanpak: ["Maak je logboek compleet (minimaal 40 uur).", "Bespreek de laatste versie nog één keer met je begeleider."],
-    letOp: ["Het logboek moet tijdens het PWS zijn bijgehouden, niet achteraf."],
-  },
-  19: {
-    aanpak: ["Verwerk de laatste feedback.", "Loop spelling, bronnen, opmaak en de beoordelingscriteria na."],
-    letOp: ["Daarna niets groots meer veranderen."],
-  },
-  20: {
-    aanpak: ["Maak het definitieve bestand.", "Controleer of werkelijk alles aanwezig is, inclusief de bijlagen."],
-  },
-  21: {
+  11: {
     aanpak: ["Lever je werkstuk in vóór de deadline.", "Bewaar een kopie voor jezelf."],
     letOp: ["Check de exacte inlevermanier en -datum bij je begeleider."],
   },
-  22: {
+  12: {
     aanpak: [
       "Bouw je presentatie op rond vier vragen: wat wilde ik weten? → hoe heb ik het onderzocht? → wat heb ik ontdekt? → wat is mijn conclusie?",
       "Bedenk wat je toont (poster, grafieken, een product) en houd het simpel te volgen.",
@@ -204,7 +159,7 @@ export const FASE_HULP: Record<number, FaseHulp> = {
     ],
     letOp: ["Familie en jongere leerlingen kijken mee — leg het uit alsof zij je onderwerp niet kennen."],
   },
-  23: {
+  13: {
     aanpak: ["Sta bij je stand en licht je onderzoek toe.", "Wees trots: je laat zien wat je in maanden werk hebt bereikt."],
   },
 };

@@ -33,9 +33,9 @@ export default async function VerslagPage() {
     theorie: vd(4).kernpunten ?? "",
     methode: join(vd(3).eigen_onderzoek, vd(5).instrument, vd(6).uitvoering),
     resultaten: join(vd(7).ordening, vd(7).eerste_analyse),
-    analyse: join(vd(8).patronen, vd(9).antwoorden),
-    conclusie: join(vd(10).antwoord_hoofdvraag, vd(10).conclusie),
-    discussie: join(vd(11).betrouwbaarheid, vd(11).beperkingen, vd(11).vervolg),
+    analyse: join(vd(7).patronen, vd(8).antwoorden),
+    conclusie: join(vd(8).antwoord_hoofdvraag, vd(8).conclusie),
+    discussie: join(vd(8).betrouwbaarheid, vd(8).beperkingen, vd(8).vervolg),
     bronnenlijst: src.map(toApa).join("\n\n"),
   };
 
