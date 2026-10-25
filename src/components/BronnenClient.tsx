@@ -30,6 +30,7 @@ export default function BronnenClient({
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [samenvatten, setSamenvatten] = useState<Set<string>>(new Set());
   const [form, setForm] = useState({
     source_type: "website" as Source["source_type"],
     authors: "",
@@ -73,6 +74,25 @@ export default function BronnenClient({
     if (data) {
       setItems((prev) => [...prev, data as Source]);
       setForm({ ...form, authors: "", title: "", year: "", publisher: "", url: "", accessed_on: "", notes: "" });
+      void maakSamenvatting((data as Source).id);
+    }
+  }
+
+  // Na het toevoegen meteen een eerste samenvatting laten maken (op de achtergrond).
+  async function maakSamenvatting(id: string) {
+    setSamenvatten((s) => new Set(s).add(id));
+    try {
+      const res = await fetch(`/api/bron/${id}/samenvatting`, { method: "POST" });
+      const json = await res.json();
+      if (json.ok) setItems((prev) => prev.map((i) => (i.id === id ? { ...i, summary: json.summary } : i)));
+    } catch {
+      // Lukt het niet, dan kan de leerling het later zelf met de knop proberen.
+    } finally {
+      setSamenvatten((s) => {
+        const n = new Set(s);
+        n.delete(id);
+        return n;
+      });
     }
   }
 
@@ -135,6 +155,11 @@ export default function BronnenClient({
                     </div>
                     <p className="mt-1.5 text-sm text-slate-800">{toApa(s)}</p>
                     {s.notes && <p className="mt-1 text-xs text-slate-500">{s.notes}</p>}
+                    {samenvatten.has(s.id) ? (
+                      <p className="mt-2 text-xs italic text-slate-400">Samenvatting wordt gemaakt…</p>
+                    ) : (
+                      s.summary && <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm text-slate-600">{s.summary}</p>
+                    )}
                   </div>
                   {confirmId === s.id ? (
                     <div className="flex shrink-0 items-center gap-1.5">
@@ -173,6 +198,7 @@ export default function BronnenClient({
                 </button>
                 {expanded === s.id && (
                   <BronUitwerking
+                    key={`${s.id}-${samenvatten.has(s.id) ? "bezig" : "klaar"}`}
                     source={s}
                     deelvragen={deelvragen}
                     onUpdate={(patch) => setItems((prev) => prev.map((i) => (i.id === s.id ? { ...i, ...patch } : i)))}

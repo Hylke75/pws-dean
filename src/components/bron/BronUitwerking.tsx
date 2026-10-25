@@ -175,6 +175,7 @@ export default function BronUitwerking({
           placeholder="Wat staat er in deze bron? Laat AI een opzet maken of schrijf het in je eigen woorden."
           className="mt-1 w-full resize-y rounded-lg border border-slate-200 p-2.5 text-sm outline-none focus:border-emerald-500"
         />
+        <p className="mt-1 text-xs text-slate-400">Een AI-samenvatting is een opzet: check hem met de bron en zet hem in je eigen woorden voordat je hem in je PWS gebruikt.</p>
         {aiMelding && <p className="mt-1 text-xs text-amber-600">{aiMelding}</p>}
       </div>
       <div>
