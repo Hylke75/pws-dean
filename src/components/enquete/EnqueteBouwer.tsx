@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { STANDAARD_LABELS, labelVan, labelsVoor, vraagNummers, type Reactie } from "@/lib/enquete";
@@ -124,7 +124,12 @@ export default function EnqueteBouwer({
     router.refresh();
   }
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  // Op de server is het adres onbekend; pas na het laden in de browser invullen, zodat server en browser hetzelfde tonen.
+  const origin = useSyncExternalStore(
+    () => () => {},
+    () => window.location.origin,
+    () => "",
+  );
   const shareUrl = `${origin}${vasteSlug ? `/e/${vasteSlug}` : `/enquete/${survey.share_token}`}`;
   const deelTekst = `Wil je mijn korte enquête voor mijn profielwerkstuk invullen? Het duurt maar een paar minuten en is anoniem. ${shareUrl}`;
 

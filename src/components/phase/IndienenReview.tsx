@@ -14,7 +14,7 @@ const BADGE: Record<ReviewStatus, string> = {
 };
 
 function ago(iso: string) {
-  return new Date(iso).toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("nl-NL", { timeZone: "Europe/Amsterdam", day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function IndienenReview({

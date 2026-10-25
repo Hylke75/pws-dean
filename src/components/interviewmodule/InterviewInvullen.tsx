@@ -31,7 +31,7 @@ const TAAL_KEY = "pws_iv_taal";
 type Fase = "laden" | "ongeldig" | "gesloten" | "afgerond" | "intro" | "toestemming" | "vragen" | "controle" | "verstuurd";
 type Opslag = "opgeslagen" | "bezig" | "fout" | "wijziging";
 
-const tijd = (iso: string, taal: Taal) => new Date(iso).toLocaleTimeString(taal === "en" ? "en-GB" : "nl-NL", { hour: "2-digit", minute: "2-digit" });
+const tijd = (iso: string, taal: Taal) => new Date(iso).toLocaleTimeString(taal === "en" ? "en-GB" : "nl-NL", { timeZone: "Europe/Amsterdam", hour: "2-digit", minute: "2-digit" });
 
 function bewaardeTaal(): Taal | null {
   try {

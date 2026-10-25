@@ -39,7 +39,9 @@ export default function EnqueteResultaten({
   const totaal = reacties.length;
   const nummers = vraagNummers(vragen);
   const laatste = totaal ? new Date(reacties[totaal - 1].created_at) : null;
-  const vandaag = reacties.filter((r) => new Date(r.created_at).toDateString() === new Date().toDateString()).length;
+  // Altijd in Nederlandse tijd, zodat de server (UTC) en de browser dezelfde dag en datum tonen.
+  const dag = (d: Date) => d.toLocaleDateString("nl-NL", { timeZone: "Europe/Amsterdam" });
+  const vandaag = reacties.filter((r) => dag(new Date(r.created_at)) === dag(new Date())).length;
 
   function download(inhoud: string, naam: string) {
     const blob = new Blob(["﻿" + inhoud], { type: "text/csv;charset=utf-8" });
@@ -58,7 +60,7 @@ export default function EnqueteResultaten({
         <Tegel label="Vandaag" waarde={String(vandaag)} />
         <Tegel
           label="Laatste"
-          waarde={laatste ? laatste.toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "–"}
+          waarde={laatste ? laatste.toLocaleDateString("nl-NL", { timeZone: "Europe/Amsterdam", day: "numeric", month: "short" }) : "–"}
         />
       </div>
 

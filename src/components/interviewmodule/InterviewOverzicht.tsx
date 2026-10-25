@@ -24,7 +24,7 @@ export type OverzichtRij = {
 };
 
 const datum = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" }) : "–";
+  iso ? new Date(iso).toLocaleDateString("nl-NL", { timeZone: "Europe/Amsterdam", day: "numeric", month: "short", year: "numeric" }) : "–";
 
 export default function InterviewOverzicht({ rijen, types }: { rijen: OverzichtRij[]; types: IvType[] }) {
   const [zoek, setZoek] = useState("");

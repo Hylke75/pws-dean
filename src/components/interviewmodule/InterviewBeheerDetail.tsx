@@ -8,7 +8,7 @@ import { IV_STATUS_LABEL, IV_STATUS_STIJL, type IvAntwoord, type IvThema, type I
 import LinkTonen from "./LinkTonen";
 
 const datumTijd = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString("nl-NL", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–";
+  iso ? new Date(iso).toLocaleString("nl-NL", { timeZone: "Europe/Amsterdam", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–";
 
 export default function InterviewBeheerDetail({
   u,
@@ -80,7 +80,7 @@ export default function InterviewBeheerDetail({
           <div><dt className="inline text-slate-500">Uitgenodigd: </dt><dd className="inline text-slate-800">{datumTijd(u.uitgenodigd_op)}</dd></div>
           <div><dt className="inline text-slate-500">Laatste activiteit: </dt><dd className="inline text-slate-800">{datumTijd(u.laatste_activiteit)}</dd></div>
           <div><dt className="inline text-slate-500">Afgerond: </dt><dd className="inline text-slate-800">{datumTijd(u.afgerond_op)}</dd></div>
-          <div><dt className="inline text-slate-500">Bewaren tot: </dt><dd className="inline text-slate-800">{u.bewaren_tot ? new Date(u.bewaren_tot).toLocaleDateString("nl-NL") : "na afronding vastgesteld"}</dd></div>
+          <div><dt className="inline text-slate-500">Bewaren tot: </dt><dd className="inline text-slate-800">{u.bewaren_tot ? new Date(u.bewaren_tot).toLocaleDateString("nl-NL", { timeZone: "Europe/Amsterdam" }) : "na afronding vastgesteld"}</dd></div>
         </dl>
 
         <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm">

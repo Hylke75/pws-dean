@@ -60,7 +60,7 @@ export default function ToetsPaneel({
             <>{data ? "Opnieuw controleren" : "Controleer mijn werk"}</>
           )}
         </button>
-        {at && <span className="text-xs text-slate-500">Laatst gecontroleerd: {new Date(at).toLocaleString("nl-NL")}</span>}
+        {at && <span className="text-xs text-slate-500">Laatst gecontroleerd: {new Date(at).toLocaleString("nl-NL", { timeZone: "Europe/Amsterdam" })}</span>}
       </div>
 
       {state === "no_key" && (
