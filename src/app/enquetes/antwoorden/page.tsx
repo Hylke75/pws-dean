@@ -2,8 +2,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { aiBeschikbaar } from "@/lib/ai";
 import { laadOnderzoek } from "@/lib/onderzoekData";
-import { vraagRefs, type OnderzoeksAntwoorden } from "@/lib/onderzoek";
-import OnderzoekAntwoorden, { type Basis } from "@/components/onderzoek/OnderzoekAntwoorden";
+import { vraagRefs } from "@/lib/onderzoek";
+import { laadAnalyse } from "@/lib/onderzoekOpslag";
+import OnderzoekAntwoorden from "@/components/onderzoek/OnderzoekAntwoorden";
 import { GeenToegang } from "@/components/interviewmodule/InterviewTabs";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function AntwoordenPage() {
   const supabase = await createClient();
   const { data: mag } = await supabase.rpc("pws_iv_mag_beheren");
-  const [data, { data: laatste }] = await Promise.all([
-    laadOnderzoek(supabase),
-    supabase.from("pws_onderzoek_antwoorden").select("resultaat, basis, created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
-  ]);
+  const [data, laatste] = await Promise.all([laadOnderzoek(supabase), laadAnalyse(supabase)]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
@@ -35,9 +33,9 @@ export default async function AntwoordenPage() {
           refs={vraagRefs(data.enquetes)}
           interviews={data.interviews.length}
           zonderToestemming={data.zonderToestemming}
-          resultaat={(laatste?.resultaat as OnderzoeksAntwoorden | undefined) ?? null}
-          basis={(laatste?.basis as Basis | undefined) ?? null}
-          gemaaktOp={laatste?.created_at ?? null}
+          resultaat={laatste?.resultaat ?? null}
+          basis={laatste?.basis ?? null}
+          gemaaktOp={laatste?.gemaakt_op ?? null}
           aiAan={aiBeschikbaar()}
         />
       ) : (

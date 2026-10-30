@@ -3,15 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { VraagResultaat } from "@/components/enquete/EnqueteResultaten";
+import Vergelijking, { TITELS, TOELICHTING } from "@/components/enquete/Vergelijking";
+import { GROEP_KLEUREN, GroepLegenda } from "@/components/enquete/Grafieken";
 import { splitsDeelvraag } from "@/lib/verslag";
-import type { Antwoord, OnderzoekEnquete, OnderzoeksAntwoorden, VraagRef } from "@/lib/onderzoek";
-
-export type Basis = { enquetes: { id: string; title: string; reacties: number }[]; interviews: number };
-
-/** Korte naam van een enquête, bijv. "leerlingen en studenten". */
-function groep(title: string) {
-  return title.split("–").pop()!.trim();
-}
+import {
+  figurenVoor,
+  groepNaam as groep,
+  type Antwoord,
+  type OnderzoekEnquete,
+  type OnderzoeksAntwoorden,
+  type VraagRef,
+} from "@/lib/onderzoek";
+import type { Basis } from "@/lib/onderzoekOpslag";
 
 const datum = (iso: string) =>
   new Date(iso).toLocaleString("nl-NL", { timeZone: "Europe/Amsterdam", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
@@ -146,11 +149,10 @@ export default function OnderzoekAntwoorden({
               vraag={deelvragen[i] ? splitsDeelvraag(deelvragen[i]).vraag : ""}
               a={a}
               leesbaar={leesbaar}
-              refs={refs}
               enquetes={enquetes}
             />
           ))}
-          <AntwoordBlok id="hoofdvraag" kop="Hoofdvraag" vraag={hoofdvraag} a={resultaat.hoofdvraag} leesbaar={leesbaar} refs={refs} enquetes={enquetes} hoofd />
+          <AntwoordBlok id="hoofdvraag" kop="Hoofdvraag" vraag={hoofdvraag} a={resultaat.hoofdvraag} leesbaar={leesbaar} enquetes={enquetes} hoofd />
         </>
       ) : (
         !bezig && (
@@ -169,7 +171,6 @@ function AntwoordBlok({
   vraag,
   a,
   leesbaar,
-  refs,
   enquetes,
   hoofd = false,
 }: {
@@ -178,11 +179,11 @@ function AntwoordBlok({
   vraag: string;
   a: Antwoord;
   leesbaar: (t: string) => string;
-  refs: VraagRef[];
   enquetes: OnderzoekEnquete[];
   hoofd?: boolean;
 }) {
   const [gekopieerd, setGekopieerd] = useState(false);
+  const figuren = figurenVoor(a.grafieken, enquetes);
   const tekst = [leesbaar(a.antwoord), ...a.onderbouwing.map((o) => `- ${leesbaar(o)}`)].join("\n");
 
   return (
@@ -226,22 +227,39 @@ function AntwoordBlok({
         </div>
       )}
 
-      {a.grafieken.length > 0 && (
+      {figuren.length > 0 && (
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {a.grafieken.map((g) => {
-            const r = refs.find((x) => x.code === g.code);
-            const e = r && enquetes.find((x) => x.id === r.surveyId);
-            const v = e?.vragen.find((x) => x.id === r!.vraagId);
-            if (!r || !e || !v) return null;
+          {figuren.map((f) => {
+            if (f.soort === "vergelijk") {
+              const per = f.per.map(({ enquete, vraag }) => {
+                const e = enquetes[enquete];
+                return { g: { naam: groep(e.title), kleur: GROEP_KLEUREN[enquete % GROEP_KLEUREN.length], n: e.reacties.length, reacties: e.reacties }, v: vraag };
+              });
+              return (
+                <figure key={f.code} className="rounded-xl border border-slate-200 p-3 md:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Vergelijking tussen de doelgroepen</p>
+                  <p className="mt-0.5 text-sm font-semibold text-slate-900">{TITELS[f.sleutel] ?? f.per[0].vraag.text}</p>
+                  {f.waarom && <p className="mt-0.5 text-xs text-slate-500">{f.waarom}</p>}
+                  {TOELICHTING[f.sleutel] && <p className="mt-0.5 text-xs italic text-slate-500">{TOELICHTING[f.sleutel]}</p>}
+                  <div className="mt-2">
+                    <GroepLegenda groepen={per.map(({ g }) => g)} />
+                  </div>
+                  <div className="mt-3">
+                    <Vergelijking per={per} />
+                  </div>
+                </figure>
+              );
+            }
+            const e = enquetes[f.enquete];
             return (
-              <figure key={g.code} className="rounded-xl border border-slate-200 p-3">
+              <figure key={f.code} className="rounded-xl border border-slate-200 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                  Enquête {groep(e.title)} · vraag {r.nummer}
+                  Enquête {groep(e.title)} · vraag {f.nummer}
                 </p>
-                <p className="mt-0.5 text-sm font-semibold text-slate-900">{v.text}</p>
-                {g.waarom && <p className="mt-0.5 text-xs text-slate-500">{g.waarom}</p>}
+                <p className="mt-0.5 text-sm font-semibold text-slate-900">{f.vraag.text}</p>
+                {f.waarom && <p className="mt-0.5 text-xs text-slate-500">{f.waarom}</p>}
                 <div className="mt-3">
-                  <VraagResultaat vraag={v} reacties={e.reacties} />
+                  <VraagResultaat vraag={f.vraag} reacties={e.reacties} />
                 </div>
               </figure>
             );

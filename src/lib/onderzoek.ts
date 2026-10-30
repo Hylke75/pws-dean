@@ -143,3 +143,44 @@ export function controleerAntwoorden(raw: unknown, refs: VraagRef[], aantalDeelv
   });
   return { deelvragen, hoofdvraag: antwoord(obj.hoofdvraag), algemeen: tekst(obj.algemeen) };
 }
+
+/** Korte naam van een enquête, bijv. "leerlingen en studenten". */
+export function groepNaam(title: string): string {
+  return title.split("–").pop()!.trim();
+}
+
+export type Figuur =
+  | { soort: "enkel"; code: string; waarom: string; enquete: number; vraag: Vraag; nummer: string }
+  | { soort: "vergelijk"; code: string; waarom: string; sleutel: string; per: { enquete: number; vraag: Vraag }[] };
+
+/**
+ * Zet de grafiekkeuze van de AI om naar figuren. Staat dezelfde vraag (zelfde vergelijk-sleutel)
+ * ook in andere enquêtes, dan wordt het één vergelijkingsgrafiek met alle doelgroepen.
+ */
+export function figurenVoor(grafieken: GrafiekKeuze[], enquetes: OnderzoekEnquete[]): Figuur[] {
+  const refs = vraagRefs(enquetes);
+  const uit: Figuur[] = [];
+  const gehad = new Set<string>();
+  for (const g of grafieken) {
+    const r = refs.find((x) => x.code === g.code);
+    const ei = r ? enquetes.findIndex((e) => e.id === r.surveyId) : -1;
+    const v = r && ei >= 0 ? enquetes[ei].vragen.find((x) => x.id === r.vraagId) : undefined;
+    if (!r || !v) continue;
+    const sleutel = v.config.vergelijk;
+    const per = sleutel
+      ? enquetes
+          .map((e, i) => ({ enquete: i, vraag: e.vragen.find((x) => x.config.vergelijk === sleutel && x.type !== "open") }))
+          .filter((x): x is { enquete: number; vraag: Vraag } => !!x.vraag)
+      : [];
+    if (sleutel && v.type !== "open" && per.length > 1) {
+      if (gehad.has(`k:${sleutel}`)) continue;
+      gehad.add(`k:${sleutel}`);
+      uit.push({ soort: "vergelijk", code: g.code, waarom: g.waarom, sleutel, per });
+    } else {
+      if (gehad.has(g.code)) continue;
+      gehad.add(g.code);
+      uit.push({ soort: "enkel", code: g.code, waarom: g.waarom, enquete: ei, vraag: v, nummer: r.nummer });
+    }
+  }
+  return uit;
+}

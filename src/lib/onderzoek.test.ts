@@ -42,3 +42,19 @@ describe("onderzoek", () => {
     expect(uit.hoofdvraag.antwoord).toBe("h");
   });
 });
+
+describe("grafieken voor Word", () => {
+  it("maakt staven met aantallen en percentages", async () => {
+    const { enkelHtml, vergelijkHtml } = await import("./grafiekHtml");
+    const html = enkelHtml(vraag, enquete.reacties);
+    expect(html).toContain("2 (67%)");
+    expect(html).toContain('width="67%"');
+    const v = vergelijkHtml([
+      { naam: "leerlingen", kleur: "#2a78d6", vraag, reacties: enquete.reacties },
+      { naam: "docenten", kleur: "#eb6834", vraag, reacties: enquete.reacties.slice(0, 1) },
+    ]);
+    expect(v).toContain("leerlingen (n = 3)");
+    expect(v).toContain("1 (100%)");
+    expect(v).toContain('font-weight:bold;padding-top:4pt">Ja<');
+  });
+});

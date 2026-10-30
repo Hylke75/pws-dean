@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { aiBeschikbaar } from "@/lib/ai";
 import { getOnderzoeksAntwoorden, ONDERZOEK_MODEL } from "@/lib/aiOnderzoek";
 import { laadOnderzoek } from "@/lib/onderzoekData";
+import { bewaarAnalyse } from "@/lib/onderzoekOpslag";
 
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export async function POST() {
       enquetes: data.enquetes.map((e) => ({ id: e.id, title: e.title, reacties: e.reacties.length })),
       interviews: data.interviews.length,
     };
-    const { error } = await supabase.from("pws_onderzoek_antwoorden").insert({ resultaat, basis, model: ONDERZOEK_MODEL });
+    const { error } = await bewaarAnalyse(supabase, { resultaat, basis, model: ONDERZOEK_MODEL, gemaakt_op: new Date().toISOString() });
     if (error) throw error;
     return NextResponse.json({ ok: true });
   } catch (e) {

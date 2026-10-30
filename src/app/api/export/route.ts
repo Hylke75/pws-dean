@@ -3,6 +3,12 @@ import { fmtDate } from "@/lib/dates";
 import { bouwVerslag } from "@/lib/verslag";
 import { laadVerslag } from "@/lib/verslagData";
 import { naarTekst, schoonHtml } from "@/lib/opmaak";
+import { laadAnalyse } from "@/lib/onderzoekOpslag";
+import { laadOnderzoek } from "@/lib/onderzoekData";
+import { figurenVoor, groepNaam } from "@/lib/onderzoek";
+import { enkelHtml, vergelijkHtml } from "@/lib/grafiekHtml";
+import { GROEP_KLEUREN } from "@/components/enquete/Grafieken";
+import { TITELS } from "@/components/enquete/Vergelijking";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +31,30 @@ export async function GET() {
   const nogSchrijven = (label: string) => `<p style="color:#b45309"><i>[Nog schrijven: ${esc(label)}]</i></p>`;
   const blokken: string[] = [];
 
+  // Grafieken uit het eigen onderzoek per deelvraag, zoals gekozen in de laatste analyse; de cijfers zijn altijd actueel.
+  const analyse = await laadAnalyse(supabase);
+  const onderzoek = analyse ? await laadOnderzoek(supabase) : null;
+  let figuurNr = 0;
+  function grafieken(nummer: number): string {
+    const keuze = analyse?.resultaat.deelvragen[nummer - 1]?.grafieken ?? [];
+    if (!onderzoek || !keuze.length) return "";
+    const delen = figurenVoor(keuze, onderzoek.enquetes).map((f) => {
+      if (f.soort === "vergelijk") {
+        const reeksen = f.per.map(({ enquete, vraag }) => {
+          const e = onderzoek.enquetes[enquete];
+          return { naam: groepNaam(e.title), kleur: GROEP_KLEUREN[enquete % GROEP_KLEUREN.length], vraag, reacties: e.reacties };
+        });
+        const titel = TITELS[f.sleutel] ?? f.per[0].vraag.text;
+        return `<p><b>Figuur ${++figuurNr}.</b> ${esc(titel)} <i>(vergelijking tussen de doelgroepen)</i></p>${vergelijkHtml(reeksen)}`;
+      }
+      const html = enkelHtml(f.vraag, onderzoek.enquetes[f.enquete].reacties);
+      if (!html) return "";
+      const e = onderzoek.enquetes[f.enquete];
+      return `<p><b>Figuur ${++figuurNr}.</b> ${esc(f.vraag.text)} <i>(enquête ${esc(groepNaam(e.title))}, n = ${e.reacties.length})</i></p>${html}`;
+    });
+    return delen.filter(Boolean).join("<br/>");
+  }
+
   for (const h of bouwVerslag(input)) {
     if (h.key === "titelpagina") {
       const titel = tekst.get("titel") || "Profielwerkstuk";
@@ -39,6 +69,11 @@ export async function GET() {
     const stukken: string[] = [];
     for (const f of h.schrijven) {
       const t = tekst.get(f.key);
+      // Bij een hoofdstuk per deelvraag komen de grafieken vóór de conclusie van het hoofdstuk.
+      if (h.key.startsWith("h:") && f.key.endsWith(":conclusie")) {
+        const g = grafieken(Number(h.nummer));
+        if (g) stukken.push(`<h3>Resultaten uit eigen onderzoek</h3>${g}<p style="color:#b45309"><i>[Leg de figuren hierboven uit in je tekst.]</i></p>`);
+      }
       // Hoofdstukken met meerdere stukken krijgen per paragraaf een kop (de inleiding van het hoofdstuk niet).
       if (h.schrijven.length > 1 && !f.key.endsWith(":intro")) stukken.push(`<h3>${esc(f.label)}</h3>`);
       stukken.push(t ? schoonHtml(t) : nogSchrijven(f.label));
