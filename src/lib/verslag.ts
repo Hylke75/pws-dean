@@ -191,6 +191,11 @@ export function bouwVerslag(i: VerslagInput): Hoofdstuk[] {
         link: { href: `/enquetes/${e.id}`, label: "Bekijk de resultaten" },
       });
     }
+    auto.push({
+      titel: "Antwoord uit je eigen data",
+      tekst: "Op de pagina 'Antwoorden op je onderzoeksvragen' staat wat je enquêtes en interviews over deze deelvraag zeggen, met grafieken die je in dit hoofdstuk kunt gebruiken.",
+      link: { href: `/enquetes/antwoorden#dv-${nr}`, label: "Bekijk het antwoord" },
+    });
     if (eigen?.interviews) {
       auto.push({
         titel: "Eigen onderzoek: interviews",

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import EnquetesLijst from "@/components/enquete/EnquetesLijst";
 import type { Survey } from "@/lib/types";
@@ -22,7 +23,15 @@ export default async function EnquetesPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="text-2xl font-bold text-slate-900">Enquêtes</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-2xl font-bold text-slate-900">Enquêtes</h1>
+        <Link
+          href="/enquetes/antwoorden"
+          className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-800"
+        >
+          ✨ Antwoorden op je onderzoeksvragen
+        </Link>
+      </div>
       <p className="mt-1 text-slate-500">
         Maak een enquête voor je eigen onderzoek, deel de link, en bekijk de resultaten met grafieken.
       </p>

@@ -142,7 +142,7 @@ function Tegel({ label, waarde }: { label: string; waarde: string }) {
   );
 }
 
-function VraagResultaat({ vraag, reacties }: { vraag: Vraag; reacties: Reactie[] }) {
+export function VraagResultaat({ vraag, reacties }: { vraag: Vraag; reacties: Reactie[] }) {
   if (vraag.type === "open") {
     const lijst = openAntwoorden(vraag, reacties);
     if (!lijst.length) return <p className="text-sm text-slate-500">Nog geen antwoorden.</p>;

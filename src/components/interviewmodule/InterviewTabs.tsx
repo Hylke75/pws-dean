@@ -4,6 +4,7 @@ const TABS = [
   { href: "/interviews", key: "overzicht", label: "Overzicht" },
   { href: "/interviews/vragen", key: "vragen", label: "Vragen en typen" },
   { href: "/interviews/analyse", key: "analyse", label: "Analyse" },
+  { href: "/enquetes/antwoorden", key: "antwoorden", label: "Antwoorden op onderzoeksvragen" },
   { href: "/interviews/export", key: "export", label: "Exporteren" },
   { href: "/interviews/instellingen", key: "instellingen", label: "Privacy en instellingen" },
 ] as const;
