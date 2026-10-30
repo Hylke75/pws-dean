@@ -53,3 +53,13 @@ describe("toApa", () => {
     expect(toApa(bron({ source_type: "interview", authors: "H. de Vries", accessed_on: "2026-10-01" }))).toContain("Persoonlijke communicatie");
   });
 });
+
+describe("apaInTekst", () => {
+  it("maakt een korte bronvermelding voor in de tekst", async () => {
+    const { apaInTekst } = await import("./apa");
+    expect(apaInTekst({ authors: "UWV", publisher: "UWV", title: "x", year: "2025" })).toBe("(UWV, 2025)");
+    expect(apaInTekst({ authors: "Massenkoff, M., & McCrory, P.", publisher: null, title: "x", year: "2026" })).toBe("(Massenkoff & McCrory, 2026)");
+    expect(apaInTekst({ authors: "A, B., C, D., & E, F.", publisher: null, title: "x", year: "2026" })).toBe("(A et al., 2026)");
+    expect(apaInTekst({ authors: null, publisher: "NU.nl", title: "x", year: null })).toBe("(NU.nl, z.d.)");
+  });
+});

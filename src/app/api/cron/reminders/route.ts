@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendMail, shell } from "@/lib/email";
 import { fmtDate } from "@/lib/dates";
+import { weekMail, type WeekGegevens } from "@/lib/weekoverzicht";
 
 export const dynamic = "force-dynamic";
 
@@ -58,9 +59,19 @@ export async function GET(request: NextRequest) {
     if (ok) mailed++;
   }
 
+  // Weekoverzicht voor de leerling: de functie geeft alleen op maandag (één keer per week) iets terug.
+  let weekMails = 0;
+  const { data: week, error: weekFout } = await supabase.rpc("pws_weekoverzicht");
+  if (weekFout) console.error("[cron] weekoverzicht mislukt:", weekFout.message);
+  for (const w of (week as { email: string | null; full_name: string | null; gegevens: WeekGegevens }[]) ?? []) {
+    if (!w.email) continue;
+    const { onderwerp, html } = weekMail(w.gegevens, w.full_name, new Date());
+    if (await sendMail({ to: w.email, subject: onderwerp, html: shell("Je weekoverzicht", html, site ? `${site}/verslag` : undefined) })) weekMails++;
+  }
+
   // Interviews waarvan de bewaartermijn is verstreken definitief verwijderen.
   const { data: opgeruimd, error: opruimFout } = await supabase.rpc("pws_iv_opruimen");
   if (opruimFout) console.error("[cron] opruimen interviews mislukt");
 
-  return NextResponse.json({ ok: true, reminders: rows.length, mailed, interviewsOpgeruimd: opgeruimd ?? 0 });
+  return NextResponse.json({ ok: true, reminders: rows.length, mailed, weekMails, interviewsOpgeruimd: opgeruimd ?? 0 });
 }

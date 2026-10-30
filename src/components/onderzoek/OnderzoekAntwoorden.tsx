@@ -187,7 +187,7 @@ function AntwoordBlok({
 }) {
   const [gekopieerd, setGekopieerd] = useState(false);
   const figuren = figurenVoor(a.grafieken, enquetes);
-  const tekst = [leesbaar(a.antwoord), ...a.onderbouwing.map((o) => `- ${leesbaar(o)}`)].join("\n");
+  const tekst = [leesbaar(a.antwoord), ...a.onderbouwing.map((o) => `- ${leesbaar(o)}`), a.bronnen].filter(Boolean).join("\n");
 
   return (
     <section id={id} className={`scroll-mt-24 rounded-2xl border bg-white p-5 ${hoofd ? "border-emerald-300" : "border-slate-200"}`}>
@@ -220,6 +220,13 @@ function AntwoordBlok({
         <div className="mt-3 rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-900">
           <span className="font-semibold">Uit de interviews: </span>
           {leesbaar(a.interviews)}
+        </div>
+      )}
+
+      {a.bronnen && (
+        <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          <span className="font-semibold">Uit je bronnen: </span>
+          {a.bronnen}
         </div>
       )}
 

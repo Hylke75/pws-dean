@@ -1,8 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Reactie } from "@/lib/enquete";
 import { respondentNummers, vraagTekstVoor, weergave, type IvAntwoord, type IvUitnodiging } from "@/lib/interview";
-import { isEchteEnquete, type OnderzoekEnquete, type OnderzoekInterview } from "@/lib/onderzoek";
-import type { Subquestion, SurveyQuestion } from "@/lib/types";
+import { isEchteEnquete, type OnderzoekBron, type OnderzoekEnquete, type OnderzoekInterview } from "@/lib/onderzoek";
+import { apaInTekst } from "@/lib/apa";
+import { verdeelKernpunten } from "@/lib/verslag";
+import type { Source, Subquestion, SurveyQuestion } from "@/lib/types";
 
 export type OnderzoekData = {
   hoofdvraag: string;
@@ -11,17 +13,34 @@ export type OnderzoekData = {
   interviews: OnderzoekInterview[];
   /** afgeronde interviews die niet mee mogen in de AI-analyse */
   zonderToestemming: number;
+  bronnen: OnderzoekBron[];
+  /** aantekeningen uit fase 4, per deelvraag */
+  aantekeningen: Record<number, string[]>;
 };
 
 /** Alle eigen onderzoeksdata: echte enquêtes met reacties en afgeronde interviews met toestemming voor AI. */
 export async function laadOnderzoek(supabase: SupabaseClient): Promise<OnderzoekData> {
-  const [{ data: fase2 }, { data: subs }, { data: surveys }, { data: inst }, { data: alleIv }] = await Promise.all([
+  const [{ data: fase2 }, { data: subs }, { data: surveys }, { data: inst }, { data: alleIv }, { data: fase4 }, { data: bronRijen }] = await Promise.all([
     supabase.from("pws_phases").select("veld_data").eq("order_index", 2).maybeSingle(),
     supabase.from("pws_subquestions").select("*").order("order_index"),
     supabase.from("pws_surveys").select("id, title, slug, created_at").eq("verborgen", false).order("created_at"),
     supabase.from("pws_iv_instellingen").select("ai_analyse_aan").eq("id", 1).maybeSingle(),
     supabase.from("pws_iv_uitnodigingen").select("id, created_at"),
+    supabase.from("pws_phases").select("veld_data").eq("order_index", 4).maybeSingle(),
+    supabase.from("pws_sources").select("title, authors, year, publisher, summary, subquestion_id"),
   ]);
+  const deelvragen = (subs as Subquestion[]) ?? [];
+  const dvNummer = (id: string | null) => {
+    const i = deelvragen.findIndex((d) => d.id === id);
+    return i >= 0 ? i + 1 : null;
+  };
+  const bronnen: OnderzoekBron[] = ((bronRijen as Source[]) ?? []).map((b) => ({
+    inTekst: apaInTekst(b),
+    titel: b.title,
+    samenvatting: b.summary ?? "",
+    deelvraag: dvNummer(b.subquestion_id),
+  }));
+  const aantekeningen = verdeelKernpunten(((fase4?.veld_data ?? {}) as Record<string, string>).kernpunten ?? "").perDeelvraag;
 
   const volgorde = ["leerlingen", "docenten", "werknemers"];
   const plek = (s: { slug: string | null }) => volgorde.indexOf(s.slug ?? "") + 1 || volgorde.length + 1;
@@ -69,9 +88,11 @@ export async function laadOnderzoek(supabase: SupabaseClient): Promise<Onderzoek
 
   return {
     hoofdvraag: ((fase2?.veld_data ?? {}) as Record<string, string>).hoofdvraag ?? "",
-    deelvragen: (subs as Subquestion[]) ?? [],
+    deelvragen,
     enquetes,
     interviews,
     zonderToestemming: afgerond.length - metToestemming.length,
+    bronnen,
+    aantekeningen,
   };
 }

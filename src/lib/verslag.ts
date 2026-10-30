@@ -385,3 +385,13 @@ export function bouwVerslag(i: VerslagInput): Hoofdstuk[] {
 export function woorden(s: string): number {
   return s.trim() ? s.trim().split(/\s+/).length : 0;
 }
+
+/** Hoeveel schrijfstukken per week nog nodig zijn om op de einddatum klaar te zijn. */
+export function schrijfTempo(nog: number, einddatum: string | null, vandaag: Date): { weken: number; perWeek: number } | null {
+  if (!einddatum) return null;
+  const eind = new Date(`${einddatum}T23:59:59`);
+  const dagen = (eind.getTime() - vandaag.getTime()) / 86400000;
+  if (dagen < 0) return { weken: 0, perWeek: nog };
+  const weken = Math.max(1, Math.ceil(dagen / 7));
+  return { weken, perWeek: Math.ceil(nog / weken) };
+}

@@ -39,3 +39,13 @@ describe("verslag", () => {
     expect(h.find((x) => x.key === "conclusie")!.nummer).toBe("3");
   });
 });
+
+describe("schrijfTempo", () => {
+  it("verdeelt de open stukken over de resterende weken", async () => {
+    const { schrijfTempo } = await import("./verslag");
+    expect(schrijfTempo(35, "2026-12-23", new Date("2026-10-30T12:00:00"))).toEqual({ weken: 8, perWeek: 5 });
+    expect(schrijfTempo(3, "2026-10-31", new Date("2026-10-30T12:00:00"))).toEqual({ weken: 1, perWeek: 3 });
+    expect(schrijfTempo(4, "2026-10-01", new Date("2026-10-30T12:00:00"))).toEqual({ weken: 0, perWeek: 4 });
+    expect(schrijfTempo(4, null, new Date())).toBeNull();
+  });
+});

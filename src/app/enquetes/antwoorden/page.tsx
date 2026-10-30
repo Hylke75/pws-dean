@@ -22,8 +22,8 @@ export default async function AntwoordenPage() {
       </div>
       <h1 className="mt-4 text-2xl font-bold text-slate-900">Antwoorden op je onderzoeksvragen</h1>
       <p className="mt-1 text-slate-500">
-        Wat zeggen je enquêtes en interviews over je hoofdvraag en deelvragen? De AI schrijft een eerste antwoord;
-        de grafieken en cijfers komen rechtstreeks uit je data.
+        Wat zeggen je enquêtes, interviews en bronnen over je hoofdvraag en deelvragen? De AI schrijft een eerste
+        antwoord; de grafieken en cijfers komen rechtstreeks uit je data.
       </p>
       {mag ? (
         <OnderzoekAntwoorden

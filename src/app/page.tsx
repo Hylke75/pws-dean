@@ -6,6 +6,9 @@ import WelkomKaart from "@/components/WelkomKaart";
 import { fmtRange, fmtDate, daysUntil, humanUntil, isPast, parseDate } from "@/lib/dates";
 import { hulpVoorFase } from "@/lib/faseVelden";
 import { LOGBOEK_DOEL_UREN } from "@/lib/constants";
+import { bouwVerslag, schrijfTempo } from "@/lib/verslag";
+import { laadVerslag } from "@/lib/verslagData";
+import { naarTekst } from "@/lib/opmaak";
 import type { Phase } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +22,11 @@ function verwachteUren(startISO: string | null, eindISO: string | null): number 
   if (totaal <= 0) return null;
   const verstreken = Math.max(0, Math.min(totaal, (Date.now() - start.getTime()) / 86400000));
   return Math.round((LOGBOEK_DOEL_UREN * verstreken) / totaal);
+}
+
+// Buiten de component (Date.now mag niet in render-scope).
+function tempoTot(nog: number, einddatum: string | null) {
+  return schrijfTempo(nog, einddatum, new Date(Date.now()));
 }
 
 export default async function Dashboard() {
@@ -60,6 +68,15 @@ export default async function Dashboard() {
 
   // Uren-tempo: verwacht t.o.v. de looptijd (richtlijn 40 u).
   const verwachtUur = verwachteUren(phases[0]?.start_date ?? null, phases[phases.length - 1]?.deadline ?? null);
+
+  // Verslag: hoeveel schrijfstukken zijn begonnen, en wat is er per week nodig om op tijd klaar te zijn.
+  const { input: verslagInput, secties } = await laadVerslag(supabase);
+  const stukken = bouwVerslag(verslagInput).flatMap((h) => h.schrijven);
+  const geschrevenKeys = new Set(secties.filter((x) => naarTekst(x.notes ?? "")).map((x) => x.section_key));
+  const nogTeSchrijven = stukken.filter((f) => !geschrevenKeys.has(f.key));
+  const afronden = phases.find((p) => p.order_index === 10) ?? null;
+  const tempo = tempoTot(nogTeSchrijven.length, afronden?.deadline ?? null);
+  const verslagPct = stukken.length ? Math.round(((stukken.length - nogTeSchrijven.length) / stukken.length) * 100) : 0;
 
   const firstName = profile?.full_name?.split(" ")[0] ?? "daar";
   const isReviewer = profile?.role !== "student";
@@ -157,6 +174,35 @@ export default async function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Verslag */}
+      {stukken.length > 0 && (
+        <Link href="/verslag" className="mt-4 block rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-emerald-300 hover:shadow-sm">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-sm text-slate-500">Verslag</p>
+            <p className="text-sm font-medium text-slate-500">
+              {stukken.length - nogTeSchrijven.length} van {stukken.length} stukken geschreven
+            </p>
+          </div>
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="h-full rounded-full bg-violet-500" style={{ width: `${verslagPct}%` }} />
+          </div>
+          {nogTeSchrijven.length === 0 ? (
+            <p className="mt-2 text-sm font-semibold text-emerald-600">Alle stukken zijn geschreven 🎉</p>
+          ) : tempo && afronden ? (
+            <p className={`mt-2 text-sm ${tempo.weken === 0 ? "font-semibold text-red-600" : "text-slate-700"}`}>
+              {tempo.weken === 0
+                ? `De einddatum (${fmtDate(afronden.deadline)}) is voorbij; nog ${nogTeSchrijven.length} stukken te schrijven.`
+                : <>Om op <strong>{fmtDate(afronden.deadline)}</strong> klaar te zijn: <strong>± {tempo.perWeek} {tempo.perWeek === 1 ? "stuk" : "stukken"} per week</strong> ({tempo.weken} {tempo.weken === 1 ? "week" : "weken"} te gaan).</>}
+            </p>
+          ) : null}
+          {nogTeSchrijven.length > 0 && (
+            <p className="mt-1 text-xs text-slate-500">
+              {isReviewer ? "Volgende stukken" : "Deze week"}: {nogTeSchrijven.slice(0, tempo?.perWeek ? Math.min(tempo.perWeek, 5) : 3).map((f) => f.label).join(" · ")}
+            </p>
+          )}
+        </Link>
+      )}
 
       {/* Tijdlijn */}
       <h2 className="mt-10 text-lg font-semibold text-slate-900">Planning</h2>

@@ -22,6 +22,9 @@ export function isEchteEnquete(title: string): boolean {
 }
 
 export type OnderzoekEnquete = { id: string; title: string; vragen: Vraag[]; reacties: Reactie[] };
+/** Een bron uit Deans bronnenlijst, met de korte verwijzing voor in de tekst. */
+export type OnderzoekBron = { inTekst: string; titel: string; samenvatting: string; deelvraag: number | null };
+
 export type OnderzoekInterview = {
   label: string;
   type: string;
@@ -74,6 +77,24 @@ export function vraagSamenvatting(v: Vraag, reacties: Reactie[]): string {
     .join(", ")}${anders.length ? `\n  bij "Anders": ${anders.slice(0, 10).map((a) => `"${kort(a, 80)}"`).join(", ")}` : ""}`;
 }
 
+/** Bronsamenvattingen en aantekeningen uit fase 4, per deelvraag, als tekst voor de AI. */
+export function bronnenVoorAi(bronnen: OnderzoekBron[], aantekeningen: Record<number, string[]>, aantalDeelvragen: number): string {
+  const delen: string[] = [];
+  const blok = (kop: string, b: OnderzoekBron[], a: string[]) => {
+    if (!b.length && !a.length) return;
+    delen.push(
+      [
+        `#### ${kop}`,
+        ...b.map((x) => `Bron ${x.inTekst}: ${x.titel}\n${x.samenvatting.trim() || "(nog geen samenvatting)"}`),
+        ...a.map((x) => `Aantekening van Dean: ${x}`),
+      ].join("\n\n"),
+    );
+  };
+  for (let n = 1; n <= aantalDeelvragen; n++) blok(`Deelvraag ${n}`, bronnen.filter((b) => b.deelvraag === n), aantekeningen[n] ?? []);
+  blok("Niet aan een deelvraag gekoppeld", bronnen.filter((b) => b.deelvraag === null), []);
+  return delen.length ? `### Bronnen en aantekeningen\n\n${delen.join("\n\n")}` : "### Bronnen en aantekeningen\nGeen.";
+}
+
 /** Alle data als tekst voor de AI, met de vraagcodes waarnaar de AI kan verwijzen. */
 export function dataVoorAi(enquetes: OnderzoekEnquete[], interviews: OnderzoekInterview[]): string {
   const refs = vraagRefs(enquetes);
@@ -106,6 +127,8 @@ export type Antwoord = {
   onderbouwing: string[];
   grafieken: GrafiekKeuze[];
   interviews: string;
+  /** wat de bronnen erover zeggen, met bronvermelding in de tekst */
+  bronnen: string;
   beperkingen: string;
 };
 export type OnderzoeksAntwoorden = {
@@ -133,6 +156,7 @@ export function controleerAntwoorden(raw: unknown, refs: VraagRef[], aantalDeelv
       onderbouwing: lijst(a.onderbouwing),
       grafieken,
       interviews: tekst(a.interviews),
+      bronnen: tekst(a.bronnen),
       beperkingen: tekst(a.beperkingen),
     };
   };
