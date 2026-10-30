@@ -15,7 +15,8 @@ type Rij = { label: string; n: number; totaal: number; kleur?: string; inspring?
 
 function staaf(p: number, kleur: string) {
   if (p <= 0) return "&nbsp;";
-  return `<table width="${Math.max(1, p)}%" cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td bgcolor="${kleur}" style="background:${kleur};height:9pt;font-size:5pt">&nbsp;</td></tr></table>`;
+  const w = Math.max(1, p);
+  return `<table width="${w}%" cellspacing="0" cellpadding="0" style="width:${w}%;border-collapse:collapse"><tr><td bgcolor="${kleur}" style="background:${kleur};height:9pt;font-size:5pt">&nbsp;</td></tr></table>`;
 }
 
 function staafTabel(rijen: Rij[]): string {

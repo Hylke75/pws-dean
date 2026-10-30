@@ -50,12 +50,15 @@ export default function OnderzoekAntwoorden({
   const toenReacties = basis?.enquetes.reduce((s, e) => s + e.reacties, 0) ?? 0;
   const verouderd = !!basis && (nuReacties !== toenReacties || interviews !== basis.interviews);
 
-  // "[E1-V7]" leesbaar maken: "(leerlingen en studenten, vraag 7)".
+  // "[E1-V7]" of "[E1-V7, E2-V3]" leesbaar maken: "(enquête leerlingen en studenten, vraag 7)".
   const leesbaar = (t: string) =>
-    t.replace(/\s*\[(E\d+-V[\w.]+)\]/g, (heel, code: string) => {
-      const r = refs.find((x) => x.code === code);
-      const e = r && enquetes.find((x) => x.id === r.surveyId);
-      return r && e ? ` (enquête ${groep(e.title)}, vraag ${r.nummer})` : "";
+    t.replace(/\s*\[([^\]]*E\d+-V[^\]]*)\]/g, (_heel, inhoud: string) => {
+      const delen = (inhoud.match(/E\d+-V[\w.]+/g) ?? []).flatMap((code) => {
+        const r = refs.find((x) => x.code === code);
+        const e = r && enquetes.find((x) => x.id === r.surveyId);
+        return r && e ? [`enquête ${groep(e.title)}, vraag ${r.nummer}`] : [];
+      });
+      return delen.length ? ` (${delen.join("; ")})` : "";
     });
 
   async function analyseer() {
