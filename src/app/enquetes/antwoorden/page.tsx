@@ -32,6 +32,7 @@ export default async function AntwoordenPage() {
           enquetes={data.enquetes}
           refs={vraagRefs(data.enquetes)}
           interviews={data.interviews.length}
+          documenten={data.documenten.length}
           zonderToestemming={data.zonderToestemming}
           resultaat={laatste?.resultaat ?? null}
           basis={laatste?.basis ?? null}

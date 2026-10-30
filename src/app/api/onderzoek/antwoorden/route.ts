@@ -21,13 +21,14 @@ export async function POST() {
 
   const data = await laadOnderzoek(supabase);
   const reacties = data.enquetes.reduce((s, e) => s + e.reacties.length, 0);
-  if (!reacties && !data.interviews.length) return NextResponse.json({ ok: false, reason: "geen_data" });
+  if (!reacties && !data.interviews.length && !data.documenten.length) return NextResponse.json({ ok: false, reason: "geen_data" });
 
   try {
     const resultaat = await getOnderzoeksAntwoorden(data);
     const basis = {
       enquetes: data.enquetes.map((e) => ({ id: e.id, title: e.title, reacties: e.reacties.length })),
       interviews: data.interviews.length,
+      documenten: data.documenten.length,
     };
     const { error } = await bewaarAnalyse(supabase, { resultaat, basis, model: ONDERZOEK_MODEL, gemaakt_op: new Date().toISOString() });
     if (error) throw error;

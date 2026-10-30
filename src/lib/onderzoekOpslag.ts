@@ -4,7 +4,7 @@ import type { OnderzoeksAntwoorden } from "@/lib/onderzoek";
 /** De laatste analyse wordt bewaard bij de verslaggegevens, onder een eigen sleutel. */
 const SLEUTEL = "_onderzoek_antwoorden";
 
-export type Basis = { enquetes: { id: string; title: string; reacties: number }[]; interviews: number };
+export type Basis = { enquetes: { id: string; title: string; reacties: number }[]; interviews: number; documenten?: number };
 export type OpgeslagenAnalyse = { resultaat: OnderzoeksAntwoorden; basis: Basis; model: string; gemaakt_op: string };
 
 export async function laadAnalyse(supabase: SupabaseClient): Promise<OpgeslagenAnalyse | null> {

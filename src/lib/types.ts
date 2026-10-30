@@ -258,3 +258,17 @@ export type Opmerking = {
   verwerkt_op: string | null;
   created_at: string;
 };
+
+export type AnalyseDocument = {
+  id: string;
+  titel: string;
+  soort: "eigen" | "extern";
+  auteur: string | null;
+  jaar: string | null;
+  deelvraag_id: string | null;
+  bestand_pad: string;
+  bestand_naam: string;
+  samenvatting: string | null;
+  status: "bezig" | "klaar" | "fout";
+  created_at: string;
+};

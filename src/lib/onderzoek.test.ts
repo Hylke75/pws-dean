@@ -58,3 +58,17 @@ describe("grafieken voor Word", () => {
     expect(v).toContain('font-weight:bold;padding-top:4pt">Ja<');
   });
 });
+
+describe("aangeleverde analyses", () => {
+  it("noemt eigen analyses als eigen onderzoek en externe met bronvermelding", async () => {
+    const { documentenVoorAi } = await import("./onderzoek");
+    const t = documentenVoorAi([
+      { titel: "Excel-analyse", soort: "eigen", inTekst: null, samenvatting: "- 60% ja", deelvraag: 4 },
+      { titel: "CBS-rapport", soort: "extern", inTekst: "(CBS, 2025)", samenvatting: "- 43% gebruikt AI", deelvraag: null },
+    ]);
+    expect(t).toContain(`Eigen analyse van Dean (eigen onderzoek): "Excel-analyse"`);
+    expect(t).toContain("Hoort bij deelvraag 4.");
+    expect(t).toContain("vermeld als (CBS, 2025)");
+    expect(documentenVoorAi([])).toContain("Geen.");
+  });
+});

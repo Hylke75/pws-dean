@@ -1,13 +1,18 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import EnquetesLijst from "@/components/enquete/EnquetesLijst";
-import type { Survey } from "@/lib/types";
+import AnalyseDocumenten from "@/components/enquete/AnalyseDocumenten";
+import type { AnalyseDocument, Subquestion, Survey } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function EnquetesPage() {
   const supabase = await createClient();
-  const { data: surveys } = await supabase.from("pws_surveys").select("*").eq("verborgen", false).order("created_at", { ascending: false });
+  const [{ data: surveys }, { data: docs }, { data: deelvragen }] = await Promise.all([
+    supabase.from("pws_surveys").select("*").eq("verborgen", false).order("created_at", { ascending: false }),
+    supabase.from("pws_analyse_documenten").select("*").order("created_at", { ascending: false }),
+    supabase.from("pws_subquestions").select("*").order("order_index"),
+  ]);
 
   // Aantal reacties per enquête
   const counts: Record<string, number> = {};
@@ -38,6 +43,7 @@ export default async function EnquetesPage() {
       <div className="mt-6">
         <EnquetesLijst initial={(surveys as Survey[]) ?? []} counts={counts} />
       </div>
+      <AnalyseDocumenten initial={(docs as AnalyseDocument[]) ?? []} deelvragen={(deelvragen as Subquestion[]) ?? []} />
     </main>
   );
 }

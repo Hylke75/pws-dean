@@ -25,6 +25,27 @@ export type OnderzoekEnquete = { id: string; title: string; vragen: Vraag[]; rea
 /** Een bron uit Deans bronnenlijst, met de korte verwijzing voor in de tekst. */
 export type OnderzoekBron = { inTekst: string; titel: string; samenvatting: string; deelvraag: number | null };
 
+/** Een aangeleverd document met een analyse: eigen onderzoek of een bron. */
+export type OnderzoekDocument = { titel: string; soort: "eigen" | "extern"; inTekst: string | null; samenvatting: string; deelvraag: number | null };
+
+/** Samenvattingen van aangeleverde analyses als tekst voor de AI. */
+export function documentenVoorAi(docs: OnderzoekDocument[]): string {
+  if (!docs.length) return "### Aangeleverde analyses\nGeen.";
+  return `### Aangeleverde analyses\n\n${docs
+    .map((d) =>
+      [
+        d.soort === "eigen"
+          ? `Eigen analyse van Dean (eigen onderzoek): "${d.titel}"`
+          : `Analyse door anderen (bron, vermeld als ${d.inTekst}): "${d.titel}"`,
+        d.deelvraag ? `Hoort bij deelvraag ${d.deelvraag}.` : "",
+        d.samenvatting.trim(),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    )
+    .join("\n\n")}`;
+}
+
 export type OnderzoekInterview = {
   label: string;
   type: string;

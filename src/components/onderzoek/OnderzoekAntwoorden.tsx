@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { VraagResultaat } from "@/components/enquete/EnqueteResultaten";
 import Vergelijking, { TITELS, TOELICHTING } from "@/components/enquete/Vergelijking";
@@ -25,6 +26,7 @@ export default function OnderzoekAntwoorden({
   enquetes,
   refs,
   interviews,
+  documenten,
   zonderToestemming,
   resultaat,
   basis,
@@ -36,6 +38,7 @@ export default function OnderzoekAntwoorden({
   enquetes: OnderzoekEnquete[];
   refs: VraagRef[];
   interviews: number;
+  documenten: number;
   zonderToestemming: number;
   resultaat: OnderzoeksAntwoorden | null;
   basis: Basis | null;
@@ -48,7 +51,7 @@ export default function OnderzoekAntwoorden({
 
   const nuReacties = enquetes.reduce((s, e) => s + e.reacties.length, 0);
   const toenReacties = basis?.enquetes.reduce((s, e) => s + e.reacties, 0) ?? 0;
-  const verouderd = !!basis && (nuReacties !== toenReacties || interviews !== basis.interviews);
+  const verouderd = !!basis && (nuReacties !== toenReacties || interviews !== basis.interviews || documenten !== (basis.documenten ?? 0));
 
   // "[E1-V7]" of "[E1-V7, E2-V3]" leesbaar maken: "(enquête leerlingen en studenten, vraag 7)".
   const leesbaar = (t: string) =>
@@ -96,6 +99,12 @@ export default function OnderzoekAntwoorden({
             Interviews: <strong>{interviews}</strong> afgerond met toestemming voor AI-analyse
             {zonderToestemming > 0 && <span className="text-slate-400"> ({zonderToestemming} zonder toestemming, niet meegenomen)</span>}
           </li>
+          <li>
+            Aangeleverde analyses: <strong>{documenten}</strong>{" "}
+            <Link href="/enquetes" className="text-emerald-700 hover:underline">
+              (toevoegen bij Enquêtes)
+            </Link>
+          </li>
         </ul>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           {aiAan && (
@@ -111,7 +120,7 @@ export default function OnderzoekAntwoorden({
         </div>
         {verouderd && !bezig && (
           <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            Sinds de laatste analyse is er nieuwe data bijgekomen (toen {toenReacties} reacties, nu {nuReacties}). Laat de analyse opnieuw maken.
+            Sinds de laatste analyse is er nieuwe data bijgekomen (toen {toenReacties} reacties, nu {nuReacties}; of er zijn interviews of analyses bij). Laat de analyse opnieuw maken.
           </p>
         )}
         {fout && <p className="mt-2 text-sm text-rose-600">{fout}</p>}
