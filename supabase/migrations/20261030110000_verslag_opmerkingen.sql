@@ -14,32 +14,19 @@ create index if not exists pws_verslag_opmerkingen_hoofdstuk on public.pws_versl
 alter table public.pws_verslag_opmerkingen enable row level security;
 revoke all on table public.pws_verslag_opmerkingen from anon;
 
-drop policy if exists pws_verslag_opmerkingen_select on public.pws_verslag_opmerkingen;
+-- Lezen en afvinken: iedereen die is ingelogd. Plaatsen: alleen op eigen naam. Verwijderen: alleen eigen opmerkingen.
 create policy pws_verslag_opmerkingen_select on public.pws_verslag_opmerkingen
   for select to authenticated using (true);
-
--- Iedereen plaatst alleen opmerkingen op eigen naam.
-drop policy if exists pws_verslag_opmerkingen_insert on public.pws_verslag_opmerkingen;
 create policy pws_verslag_opmerkingen_insert on public.pws_verslag_opmerkingen
   for insert to authenticated with check (auteur = auth.uid());
-
--- Afvinken als verwerkt mag iedereen die is ingelogd.
-drop policy if exists pws_verslag_opmerkingen_update on public.pws_verslag_opmerkingen;
 create policy pws_verslag_opmerkingen_update on public.pws_verslag_opmerkingen
   for update to authenticated using (true) with check (true);
-
--- Verwijderen alleen door wie de opmerking schreef.
-drop policy if exists pws_verslag_opmerkingen_delete on public.pws_verslag_opmerkingen;
 create policy pws_verslag_opmerkingen_delete on public.pws_verslag_opmerkingen
   for delete to authenticated using (auteur = auth.uid());
 
 -- De begeleider leest het verslag alleen; schrijven blijft voor leerling en ouders.
-drop policy if exists pws_verslag_secties_all on public.pws_verslag_secties;
-drop policy if exists pws_verslag_secties_select on public.pws_verslag_secties;
-drop policy if exists pws_verslag_secties_write on public.pws_verslag_secties;
 create policy pws_verslag_secties_select on public.pws_verslag_secties
   for select to authenticated using (true);
-create policy pws_verslag_secties_write on public.pws_verslag_secties
-  for all to authenticated
+alter policy pws_verslag_secties_all on public.pws_verslag_secties
   using (not exists (select 1 from public.pws_profiles p where p.id = auth.uid() and p.role = 'begeleider'))
   with check (not exists (select 1 from public.pws_profiles p where p.id = auth.uid() and p.role = 'begeleider'));
