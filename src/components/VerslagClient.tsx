@@ -4,10 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { woorden, type Hoofdstuk, type SchrijfVeld } from "@/lib/verslag";
 import { useUnsavedWarning } from "@/lib/useUnsavedWarning";
-import { naarTekst } from "@/lib/opmaak";
+import { naarTekst, schoonHtml } from "@/lib/opmaak";
 import TekstEditor from "@/components/verslag/TekstEditor";
 import AiHulp from "@/components/verslag/AiHulp";
-import type { VerslagSectie } from "@/lib/types";
+import Opmerkingen from "@/components/verslag/Opmerkingen";
+import type { Opmerking, Role, VerslagSectie } from "@/lib/types";
 
 type Veld = { notes: string; klaar: boolean };
 type Opslag = "opgeslagen" | "bezig" | "fout";
@@ -20,11 +21,23 @@ export default function VerslagClient({
   hoofdstukken,
   initial,
   aiAan,
+  rol,
+  mijnId,
+  opmerkingen: beginOpmerkingen,
 }: {
   hoofdstukken: Hoofdstuk[];
   initial: VerslagSectie[];
   aiAan: boolean;
+  rol: Role;
+  mijnId: string | null;
+  opmerkingen: Opmerking[];
 }) {
+  const isLeerling = rol === "student";
+  // De begeleider leest alleen; ouders lezen standaard maar kunnen naar bewerken wisselen.
+  const [lezen, setLezen] = useState(!isLeerling);
+  const magBewerken = rol !== "begeleider";
+  const [opmerkingen, setOpmerkingen] = useState<Opmerking[]>(beginOpmerkingen);
+  const opmerkingenBij = (key: string) => opmerkingen.filter((o) => o.hoofdstuk === key);
   const supabase = useMemo(() => createClient(), []);
   const [velden, setVelden] = useState<Record<string, Veld>>(() =>
     Object.fromEntries(initial.map((s) => [s.section_key, { notes: s.notes ?? "", klaar: s.status === "klaar" }])),
@@ -70,8 +83,30 @@ export default function VerslagClient({
   const totaalWoorden = alleVelden.reduce((s, f) => s + woorden(naarTekst(veld(f.key).notes)), 0);
   const pct = alleVelden.length ? Math.round((klaar / alleVelden.length) * 100) : 0;
 
+  const openOpmerkingen = opmerkingen.filter((o) => !o.verwerkt).length;
+
   return (
     <div>
+      {!isLeerling && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+          <span>
+            {lezen
+              ? "Je leest het verslag van Dean. Plaats per hoofdstuk een opmerking; Dean krijgt daar een melding en een mail van."
+              : "Je bewerkt het verslag."}
+          </span>
+          {magBewerken && (
+            <button onClick={() => setLezen(!lezen)} className="rounded-lg border border-sky-300 bg-white px-3 py-1 text-xs font-semibold text-sky-800 hover:bg-sky-100">
+              {lezen ? "Bewerken" : "Terug naar lezen"}
+            </button>
+          )}
+        </div>
+      )}
+      {isLeerling && openOpmerkingen > 0 && (
+        <div className="mb-5 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+          💬 Er {openOpmerkingen === 1 ? "staat 1 opmerking" : `staan ${openOpmerkingen} opmerkingen`} van je begeleider open. Je ziet ze bij het hoofdstuk;
+          vink ze af als je ze hebt verwerkt.
+        </div>
+      )}
       <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5">
         <div className="flex items-baseline justify-between">
           <p className="text-sm text-slate-500">Stukken klaar</p>
@@ -93,12 +128,14 @@ export default function VerslagClient({
         <ol className="mt-2 space-y-1 text-sm">
           {hoofdstukken.map((h) => {
             const nog = h.schrijven.filter((f) => !veld(f.key).notes.trim()).length;
+            const open = opmerkingenBij(h.key).filter((o) => !o.verwerkt).length;
             return (
               <li key={h.key} className="flex items-center justify-between gap-3">
                 <a href={`#${ankerId(h.key)}`} className="truncate text-slate-700 hover:text-emerald-700 hover:underline">
                   {h.nummer && <span className="mr-1.5 font-medium text-slate-500">{h.nummer}</span>}
                   {h.titel}
                 </a>
+                {open > 0 && <span className="ml-auto shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-800">💬 {open}</span>}
                 {h.schrijven.length === 0 ? (
                   <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">automatisch</span>
                 ) : nog > 0 ? (
@@ -171,7 +208,15 @@ export default function VerslagClient({
               </div>
             )}
 
-            {h.schrijven.length > 0 && (
+            {h.schrijven.length > 0 && lezen && (
+              <div className="mt-4 space-y-4">
+                {h.schrijven.map((f) => (
+                  <LeesBlok key={f.key} veld={f} waarde={veld(f.key)} />
+                ))}
+              </div>
+            )}
+
+            {h.schrijven.length > 0 && !lezen && (
               <div className="mt-4 space-y-4">
                 {h.schrijven.map((f) => (
                   <SchrijfBlok
@@ -191,9 +236,44 @@ export default function VerslagClient({
                 ))}
               </div>
             )}
+
+            <Opmerkingen
+              hoofdstuk={h.key}
+              titel={h.nummer && !h.bijlage ? `Hoofdstuk ${h.nummer}: ${h.titel}` : h.bijlage ? `${h.nummer}: ${h.titel}` : h.titel}
+              lijst={opmerkingenBij(h.key)}
+              mijnId={mijnId}
+              isLeerling={isLeerling}
+              onWijzig={(lijst) => setOpmerkingen((alle) => [...alle.filter((o) => o.hoofdstuk !== h.key), ...lijst])}
+            />
           </section>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Alleen-lezen weergave van een geschreven stuk. */
+function LeesBlok({ veld, waarde }: { veld: SchrijfVeld; waarde: Veld }) {
+  const leeg = !naarTekst(waarde.notes);
+  return (
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-slate-900">{veld.label}</p>
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+            waarde.klaar ? "bg-emerald-100 text-emerald-700" : leeg ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-700"
+          }`}
+        >
+          {waarde.klaar ? "Klaar" : leeg ? "Nog niet geschreven" : "Concept"}
+        </span>
+      </div>
+      {leeg ? (
+        <p className="mt-1 text-sm italic text-slate-400">Nog niet geschreven.</p>
+      ) : veld.regels === 1 ? (
+        <p className="mt-1 text-sm text-slate-800">{waarde.notes}</p>
+      ) : (
+        <div className="verslag-tekst mt-1 text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: schoonHtml(waarde.notes) }} />
+      )}
     </div>
   );
 }

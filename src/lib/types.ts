@@ -1,4 +1,4 @@
-export type Role = "student" | "begeleider";
+export type Role = "student" | "ouder" | "begeleider";
 export type PhaseStatus = "te_doen" | "bezig" | "klaar";
 export type ReviewStatus = "concept" | "ingediend" | "goedgekeurd" | "wijzigingen_nodig";
 
@@ -246,4 +246,15 @@ export const STATUS_LABELS: Record<PhaseStatus, string> = {
   te_doen: "Te doen",
   bezig: "Bezig",
   klaar: "Klaar",
+};
+
+export type Opmerking = {
+  id: string;
+  hoofdstuk: string;
+  tekst: string;
+  auteur: string | null;
+  auteur_naam: string | null;
+  verwerkt: boolean;
+  verwerkt_op: string | null;
+  created_at: string;
 };

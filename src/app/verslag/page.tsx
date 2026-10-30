@@ -3,12 +3,18 @@ import VerslagClient from "@/components/VerslagClient";
 import { bouwVerslag } from "@/lib/verslag";
 import { laadVerslag } from "@/lib/verslagData";
 import { aiBeschikbaar } from "@/lib/ai";
+import { getSession } from "@/lib/session";
+import type { Opmerking } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function VerslagPage() {
   const supabase = await createClient();
-  const { input, secties } = await laadVerslag(supabase);
+  const [{ input, secties }, { user, profile }, { data: opmerkingen }] = await Promise.all([
+    laadVerslag(supabase),
+    getSession(),
+    supabase.from("pws_verslag_opmerkingen").select("*").order("created_at"),
+  ]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
@@ -37,7 +43,14 @@ export default async function VerslagPage() {
         </ul>
       </div>
       <div className="mt-6">
-        <VerslagClient hoofdstukken={bouwVerslag(input)} initial={secties} aiAan={aiBeschikbaar()} />
+        <VerslagClient
+          hoofdstukken={bouwVerslag(input)}
+          initial={secties}
+          aiAan={aiBeschikbaar()}
+          rol={profile?.role ?? "student"}
+          mijnId={user?.id ?? null}
+          opmerkingen={(opmerkingen as Opmerking[]) ?? []}
+        />
       </div>
     </main>
   );
