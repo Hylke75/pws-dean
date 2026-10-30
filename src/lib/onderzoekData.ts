@@ -29,7 +29,7 @@ export async function laadOnderzoek(supabase: SupabaseClient): Promise<Onderzoek
     supabase.from("pws_iv_instellingen").select("ai_analyse_aan").eq("id", 1).maybeSingle(),
     supabase.from("pws_iv_uitnodigingen").select("id, created_at"),
     supabase.from("pws_phases").select("veld_data").eq("order_index", 4).maybeSingle(),
-    supabase.from("pws_sources").select("title, authors, year, publisher, summary, subquestion_id"),
+    supabase.from("pws_sources").select("id, title, authors, year, publisher, summary, subquestion_id"),
     supabase.from("pws_analyse_documenten").select("*").eq("status", "klaar").order("created_at"),
   ]);
   const deelvragen = (subs as Subquestion[]) ?? [];
@@ -37,7 +37,9 @@ export async function laadOnderzoek(supabase: SupabaseClient): Promise<Onderzoek
     const i = deelvragen.findIndex((d) => d.id === id);
     return i >= 0 ? i + 1 : null;
   };
-  const bronnen: OnderzoekBron[] = ((bronRijen as Source[]) ?? []).map((b) => ({
+  // Bronnen die bij een aangeleverde analyse horen, staan al bij de documenten; niet dubbel meenemen.
+  const viaDocument = new Set(((docRijen as AnalyseDocument[]) ?? []).map((d) => d.bron_id).filter(Boolean));
+  const bronnen: OnderzoekBron[] = ((bronRijen as Source[]) ?? []).filter((b) => !viaDocument.has(b.id)).map((b) => ({
     inTekst: apaInTekst(b),
     titel: b.title,
     samenvatting: b.summary ?? "",

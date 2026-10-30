@@ -270,5 +270,7 @@ export type AnalyseDocument = {
   bestand_naam: string;
   samenvatting: string | null;
   status: "bezig" | "klaar" | "fout";
+  /** automatisch aangemaakte bron bij een analyse door anderen */
+  bron_id: string | null;
   created_at: string;
 };

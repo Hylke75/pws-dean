@@ -55,6 +55,8 @@ export async function POST(_req: Request, { params }: RouteContext<"/api/analyse
       inhoud,
     });
     await supabase.from("pws_analyse_documenten").update({ status: "klaar", samenvatting }).eq("id", id);
+    // De bijbehorende bron krijgt dezelfde samenvatting, als die daar nog leeg is.
+    if (doc.bron_id) await supabase.from("pws_sources").update({ summary: samenvatting }).eq("id", doc.bron_id).is("summary", null);
     return NextResponse.json({ ok: true, samenvatting });
   } catch (e) {
     console.error("[analyse-document] fout:", e);

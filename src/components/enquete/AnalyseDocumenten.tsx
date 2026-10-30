@@ -8,6 +8,10 @@ import type { AnalyseDocument, Subquestion } from "@/lib/types";
 const TOEGESTAAN = [".pdf", ".docx", ".csv", ".txt"];
 const MAX_MB = 10;
 
+function vandaag() {
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Amsterdam" });
+}
+
 // Buiten de component: uniek pad voor een upload (Date.now mag niet tijdens render).
 function uploadPad(naam: string) {
   return `analyses/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${naam.replace(/[^\w.-]+/g, "_")}`;
@@ -62,9 +66,30 @@ export default function AnalyseDocumenten({ initial, deelvragen }: { initial: An
       setBezig(false);
       return setFout("Uploaden lukte niet. Probeer het opnieuw.");
     }
+    // Een analyse door anderen komt ook in de bronnenlijst (en zo in het verslag, in APA-stijl).
+    let bronId: string | null = null;
+    if (soort === "extern") {
+      const { data: bron } = await supabase
+        .from("pws_sources")
+        .insert({
+          source_type: "overig",
+          title: titel.trim(),
+          authors: auteur.trim() || null,
+          year: jaar.trim() || null,
+          publisher: auteur.trim() || null,
+          subquestion_id: deelvraag || null,
+          document_path: pad,
+          document_name: bestand.name,
+          accessed_on: vandaag(),
+        })
+        .select("id")
+        .single();
+      bronId = bron?.id ?? null;
+    }
     const { data, error } = await supabase
       .from("pws_analyse_documenten")
       .insert({
+        bron_id: bronId,
         titel: titel.trim(),
         soort,
         auteur: soort === "extern" ? auteur.trim() || null : null,
@@ -93,9 +118,11 @@ export default function AnalyseDocumenten({ initial, deelvragen }: { initial: An
   }
 
   async function verwijder(d: AnalyseDocument) {
-    if (!confirm(`"${d.titel}" verwijderen? Het telt dan niet meer mee in de analyse.`)) return;
+    const ook = d.bron_id ? " Ook de bijbehorende bron verdwijnt uit je bronnenlijst." : "";
+    if (!confirm(`"${d.titel}" verwijderen? Het telt dan niet meer mee in de analyse.${ook}`)) return;
     const { error } = await supabase.from("pws_analyse_documenten").delete().eq("id", d.id);
     if (error) return setFout("Verwijderen lukte niet.");
+    if (d.bron_id) await supabase.from("pws_sources").delete().eq("id", d.bron_id);
     await supabase.storage.from("pws-files").remove([d.bestand_pad]);
     setDocs((x) => x.filter((y) => y.id !== d.id));
   }
@@ -112,7 +139,8 @@ export default function AnalyseDocumenten({ initial, deelvragen }: { initial: An
         <div>
           <p className="font-semibold text-slate-900">📄 Analyses toevoegen</p>
           <p className="text-sm text-slate-500">
-            Documenten met een analyse, van jezelf of van anderen. Ze tellen mee bij de antwoorden op je onderzoeksvragen.
+            Documenten met een analyse, van jezelf of van anderen. Ze tellen mee bij de antwoorden op je onderzoeksvragen;
+            een analyse door anderen komt ook vanzelf in je bronnenlijst.
           </p>
         </div>
         {!open && (
@@ -171,6 +199,7 @@ export default function AnalyseDocumenten({ initial, deelvragen }: { initial: An
                   <p className="text-xs text-slate-500">
                     {d.soort === "eigen" ? "Eigen analyse" : `Analyse door ${d.auteur || "anderen"}${d.jaar ? ` (${d.jaar})` : ""}`}
                     {dvNaam(d.deelvraag_id) && ` · ${dvNaam(d.deelvraag_id)}`} · {d.bestand_naam}
+                    {d.bron_id && " · staat in je bronnenlijst"}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3 text-xs">
