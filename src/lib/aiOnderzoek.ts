@@ -57,6 +57,7 @@ Regels:
 - Kies per vraag 1 tot 4 grafieken met de codes van de vragen die het antwoord het best laten zien, en zeg in één zin waarom (veld "waarom"). Kies geen open vragen als grafiek.
 - Gebruik daarnaast Deans eigen bronnen en aantekeningen (onder "Bronnen en aantekeningen"). Daarmee vul je aan wat de enquêtes niet laten zien, bijvoorbeeld hoe de arbeidsmarkt er vóór AI uitzag of cijfers over sectoren. Noem bij elke bewering uit een bron de bronvermelding zoals die erbij staat, bijv. (UWV, 2025). Gebruik alleen wat in de samenvatting of aantekening staat.
 - Houd eigen onderzoek en bronnen duidelijk uit elkaar: schrijf in het antwoord welk deel uit de enquêtes komt en welk deel uit de bronnen.
+- Zet een bronvermelding zoals (UWV, 2025) ALLEEN achter informatie die in de samenvatting of aantekening van díe bron staat. Komt iets uit een enquête (ook uit een open antwoord), dan is het eigen onderzoek: noem het in "antwoord" of "onderbouwing" met de vraagcode, nooit in "bronnen" en nooit met een bronvermelding.
 - Ontbreekt er ook in de bronnen iets, zeg dat eerlijk in het antwoord en bij de beperkingen. Vul het gat niet zelf in met algemene kennis.
 - Interviews: geef weer wat respondenten zeggen. Citeer alleen letterlijk als dat mag; anders in eigen woorden.
 - Wees eerlijk over de betrouwbaarheid: het gaat om kleine, niet-representatieve groepen.
