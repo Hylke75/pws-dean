@@ -76,12 +76,13 @@ ${bronnenVoorAi(d.bronnen, d.aantekeningen, d.deelvragen.length)}`;
 
   const response = await client.messages.create({
     model: ONDERZOEK_MODEL,
-    max_tokens: 8000,
+    max_tokens: 16000,
     system,
     output_config: { format: { type: "json_schema", schema: SCHEMA } },
     messages: [{ role: "user", content: user }],
   } as Anthropic.MessageCreateParamsNonStreaming);
 
+  if (response.stop_reason === "max_tokens") throw new Error("Het AI-antwoord was te lang en is afgebroken.");
   const blok = response.content.find((b) => b.type === "text");
   if (!blok || blok.type !== "text") throw new Error("Geen tekst in AI-antwoord");
   let raw = blok.text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();

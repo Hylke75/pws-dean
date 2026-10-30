@@ -34,6 +34,7 @@ export async function POST() {
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("[onderzoek-antwoorden] fout:", e);
-    return NextResponse.json({ ok: false, reason: "ai_error" }, { status: 500 });
+    const detail = e instanceof Error ? e.message.slice(0, 200) : "onbekend";
+    return NextResponse.json({ ok: false, reason: "ai_error", detail }, { status: 500 });
   }
 }
